@@ -1,9 +1,3 @@
-[build]
-builder = "NIXPACKS"
-
-[deploy]
-healthcheck = "/health"
-
 [[services]]
 name = "sloganizer-backend"
 source = "backend"
@@ -21,12 +15,11 @@ timeout = 30
 interval = 10
 
 [[services]]
-name = "sloganizer-frontend"
+name = "sloganizer-frontend" 
 source = "frontend"
 
 [services.build]
 builder = "NIXPACKS"
-buildCommand = "npm run build"
 
 [services.variables]
 NODE_ENV = "production"
