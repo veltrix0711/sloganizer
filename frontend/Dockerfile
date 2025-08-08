@@ -13,6 +13,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Fix permissions for all binaries in .bin (covers vite and others)
+RUN chmod -R +x node_modules/.bin
 # Build the app
 RUN npm run build
 
