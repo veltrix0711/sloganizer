@@ -17,7 +17,7 @@ import BrandSuitePage from './pages/BrandSuitePage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Components
-import Navbar from './components/Navbar'
+import Navbar from './components/NavBar'
 import Footer from './components/Footer'
 import PrivateRoute from './components/PrivateRoute'
 
