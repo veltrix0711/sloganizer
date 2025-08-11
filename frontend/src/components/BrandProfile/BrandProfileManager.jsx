@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
 import { supabase } from '../../services/supabase';
+import { apiRequest } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { 
   Plus, 
@@ -34,23 +35,9 @@ const BrandProfileManager = () => {
   const loadProfiles = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Loading brand profiles...');
       
-      // Get auth token properly
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      
-      console.log('🔍 Loading brand profiles...', { token: token ? 'Present' : 'Missing' });
-      
-      const response = await fetch('/api/brand/profiles', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to load profiles');
-
-      const data = await response.json();
+      const data = await apiRequest('/api/brand/profiles');
       setProfiles(data.profiles || []);
       
       // Set selected profile to default or first profile
@@ -81,15 +68,7 @@ const BrandProfileManager = () => {
     }
 
     try {
-      const response = await fetch(`/api/brand/profiles/${profileId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to delete profile');
-
+      await apiRequest(`/api/brand/profiles/${profileId}`, { method: 'DELETE' });
       toast.success('Brand profile deleted successfully');
       loadProfiles();
       
@@ -106,17 +85,10 @@ const BrandProfileManager = () => {
 
   const handleSetDefault = async (profileId) => {
     try {
-      const response = await fetch(`/api/brand/profiles/${profileId}`, {
+      await apiRequest(`/api/brand/profiles/${profileId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-        body: JSON.stringify({ is_default: true }),
+        body: JSON.stringify({ is_default: true })
       });
-
-      if (!response.ok) throw new Error('Failed to set default profile');
-
       toast.success('Default profile updated');
       loadProfiles();
 
@@ -128,24 +100,16 @@ const BrandProfileManager = () => {
 
   const handleFormSubmit = async (formData) => {
     try {
-      const url = editingProfile 
+      const endpoint = editingProfile 
         ? `/api/brand/profiles/${editingProfile.id}`
         : '/api/brand/profiles';
       
       const method = editingProfile ? 'PATCH' : 'POST';
 
-      const response = await fetch(url, {
+      const result = await apiRequest(endpoint, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       });
-
-      if (!response.ok) throw new Error('Failed to save profile');
-
-      const result = await response.json();
       
       toast.success(editingProfile ? 'Profile updated successfully' : 'Profile created successfully');
       setShowForm(false);

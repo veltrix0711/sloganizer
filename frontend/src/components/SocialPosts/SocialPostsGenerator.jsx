@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
-import { supabase } from '../../services/supabase';
+import { apiRequest } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { 
   Share2, 
@@ -66,15 +66,7 @@ const SocialPostsGenerator = () => {
         params.append('isDraft', filters.isDraft);
       }
 
-      const response = await fetch(`/api/social/posts?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to load posts');
-
-      const data = await response.json();
+      const data = await apiRequest(`/api/social/posts?${params}`);
       let filteredPosts = data.posts || [];
 
       // Apply search filter on frontend
@@ -104,18 +96,10 @@ const SocialPostsGenerator = () => {
         brandProfileId: selectedProfile?.id
       };
 
-      const response = await fetch('/api/social/generate', {
+      const data = await apiRequest('/api/social/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) throw new Error('Failed to generate posts');
-
-      const data = await response.json();
       
       if (data.success) {
         toast.success(`Generated ${data.posts.length} social media posts!`);
@@ -135,18 +119,10 @@ const SocialPostsGenerator = () => {
 
   const handleUpdatePost = async (postId, updates) => {
     try {
-      const response = await fetch(`/api/social/posts/${postId}`, {
+      const data = await apiRequest(`/api/social/posts/${postId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify(updates),
       });
-
-      if (!response.ok) throw new Error('Failed to update post');
-
-      const data = await response.json();
       
       // Update the post in the list
       setPosts(prev => 
@@ -167,18 +143,10 @@ const SocialPostsGenerator = () => {
 
   const handleSchedulePost = async (postId, scheduledFor) => {
     try {
-      const response = await fetch(`/api/social/posts/${postId}/schedule`, {
+      const data = await apiRequest(`/api/social/posts/${postId}/schedule`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify({ scheduledFor }),
       });
-
-      if (!response.ok) throw new Error('Failed to schedule post');
-
-      const data = await response.json();
       
       // Update the post in the list
       setPosts(prev => 
@@ -199,16 +167,9 @@ const SocialPostsGenerator = () => {
 
   const handlePublishPost = async (postId) => {
     try {
-      const response = await fetch(`/api/social/posts/${postId}/publish`, {
+      const data = await apiRequest(`/api/social/posts/${postId}/publish`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
-
-      if (!response.ok) throw new Error('Failed to mark as published');
-
-      const data = await response.json();
       
       // Update the post in the list
       setPosts(prev => 
@@ -233,14 +194,9 @@ const SocialPostsGenerator = () => {
     }
 
     try {
-      const response = await fetch(`/api/social/posts/${postId}`, {
+      const data = await apiRequest(`/api/social/posts/${postId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
-
-      if (!response.ok) throw new Error('Failed to delete post');
 
       setPosts(prev => prev.filter(post => post.id !== postId));
       toast.success('Post deleted successfully');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
-import { supabase } from '../../services/supabase';
+import { apiRequest } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { 
   Download, 
@@ -62,15 +62,7 @@ const BrandExportGenerator = () => {
         params.append('status', filter);
       }
 
-      const response = await fetch(`/api/exports/exports?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to load exports');
-
-      const data = await response.json();
+      const data = await apiRequest(`/api/exports/exports?${params}`);
       setExports(data.exports || []);
 
     } catch (error) {
@@ -96,18 +88,10 @@ const BrandExportGenerator = () => {
         exportOptions: formData.exportOptions
       };
 
-      const response = await fetch('/api/exports/brand-kit', {
+      const data = await apiRequest('/api/exports/brand-kit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) throw new Error('Failed to start export generation');
-
-      const data = await response.json();
       
       if (data.success) {
         toast.success(`Brand kit export started! ${data.message}`);
@@ -139,14 +123,9 @@ const BrandExportGenerator = () => {
     }
 
     try {
-      const response = await fetch(`/api/exports/exports/${exportId}`, {
+      const data = await apiRequest(`/api/exports/exports/${exportId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
-
-      if (!response.ok) throw new Error('Failed to delete export');
 
       setExports(prev => prev.filter(exp => exp.id !== exportId));
       toast.success('Export deleted successfully');

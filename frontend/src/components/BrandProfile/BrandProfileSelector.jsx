@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
-import { supabase } from '../../services/supabase';
+import { apiRequest } from '../../utils/api';
 import { ChevronDown, Building, Star } from 'lucide-react';
 
 const BrandProfileSelector = ({ selectedProfile, onProfileChange, allowNone = false }) => {
@@ -18,21 +18,13 @@ const BrandProfileSelector = ({ selectedProfile, onProfileChange, allowNone = fa
   const loadProfiles = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/brand/profiles', {
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProfiles(data.profiles || []);
-        
-        // Auto-select default profile if none selected
-        if (!selectedProfile && data.profiles?.length > 0) {
-          const defaultProfile = data.profiles.find(p => p.is_default) || data.profiles[0];
-          onProfileChange(defaultProfile);
-        }
+      const data = await apiRequest('/api/brand/profiles');
+      setProfiles(data.profiles || []);
+      
+      // Auto-select default profile if none selected
+      if (!selectedProfile && data.profiles?.length > 0) {
+        const defaultProfile = data.profiles.find(p => p.is_default) || data.profiles[0];
+        onProfileChange(defaultProfile);
       }
     } catch (error) {
       console.error('Load profiles error:', error);

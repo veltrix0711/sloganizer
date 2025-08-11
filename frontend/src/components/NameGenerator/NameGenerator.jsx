@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
-import { supabase } from '../../services/supabase';
+import { apiRequest } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { 
   Sparkles, 
@@ -51,15 +51,7 @@ const NameGenerator = () => {
         params.append('favoritesOnly', 'true');
       }
 
-      const response = await fetch(`/api/names/names?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to load names');
-
-      const data = await response.json();
+      const data = await apiRequest(`/api/names/names?${params}`);
       setNames(data.names || []);
 
     } catch (error) {
@@ -80,18 +72,10 @@ const NameGenerator = () => {
         checkDomains: true
       };
 
-      const response = await fetch('/api/names/generate', {
+      const data = await apiRequest('/api/names/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) throw new Error('Failed to generate names');
-
-      const data = await response.json();
       
       if (data.success) {
         toast.success(`Generated ${data.names.length} business names!`);
@@ -111,18 +95,10 @@ const NameGenerator = () => {
 
   const handleToggleFavorite = async (nameId, isFavorite) => {
     try {
-      const response = await fetch(`/api/names/names/${nameId}/favorite`, {
+      const data = await apiRequest(`/api/names/names/${nameId}/favorite`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify({ isFavorite }),
       });
-
-      if (!response.ok) throw new Error('Failed to update favorite');
-
-      const data = await response.json();
       
       // Update the name in the list
       setNames(prev => 
@@ -143,14 +119,9 @@ const NameGenerator = () => {
 
   const handleClaimName = async (nameId) => {
     try {
-      const response = await fetch(`/api/names/names/${nameId}/claim`, {
+      const data = await apiRequest(`/api/names/names/${nameId}/claim`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
-
-      if (!response.ok) throw new Error('Failed to claim name');
 
       // Update the name in the list
       setNames(prev => 
@@ -175,14 +146,9 @@ const NameGenerator = () => {
     }
 
     try {
-      const response = await fetch(`/api/names/names/${nameId}`, {
+      const data = await apiRequest(`/api/names/names/${nameId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
-
-      if (!response.ok) throw new Error('Failed to delete name');
 
       setNames(prev => prev.filter(name => name.id !== nameId));
       toast.success('Name deleted successfully');
@@ -197,18 +163,10 @@ const NameGenerator = () => {
     try {
       setLoading(true);
       
-      const response = await fetch('/api/names/check-domains', {
+      const data = await apiRequest('/api/names/check-domains', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify({ nameIds }),
       });
-
-      if (!response.ok) throw new Error('Failed to check domains');
-
-      const data = await response.json();
       
       // Update names with domain info
       setNames(prev => 

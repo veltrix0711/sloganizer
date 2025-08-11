@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
-import { supabase } from '../../services/supabase';
+import { apiRequest } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { 
   Palette, 
@@ -57,15 +57,7 @@ const LogoGenerator = () => {
         params.append('brandProfileId', selectedProfile.id);
       }
 
-      const response = await fetch(`/api/logos/assets?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to load logos');
-
-      const data = await response.json();
+      const data = await apiRequest(`/api/logos/assets?${params}`);
       setLogos(data.assets || []);
 
     } catch (error) {
@@ -78,21 +70,13 @@ const LogoGenerator = () => {
 
   const loadJobs = async () => {
     try {
-      const response = await fetch('/api/logos/jobs', {
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setJobs(data.jobs || []);
-        
-        // Check if any jobs completed and reload logos
-        const completedJobs = data.jobs?.filter(j => j.status === 'completed' && j.completedAt);
-        if (completedJobs?.length > 0) {
-          loadLogos();
-        }
+      const data = await apiRequest('/api/logos/jobs');
+      setJobs(data.jobs || []);
+      
+      // Check if any jobs completed and reload logos
+      const completedJobs = data.jobs?.filter(j => j.status === 'completed' && j.completedAt);
+      if (completedJobs?.length > 0) {
+        loadLogos();
       }
     } catch (error) {
       console.error('Load jobs error:', error);
@@ -108,18 +92,10 @@ const LogoGenerator = () => {
         brandProfileId: selectedProfile?.id
       };
 
-      const response = await fetch('/api/logos/generate', {
+      const data = await apiRequest('/api/logos/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) throw new Error('Failed to start logo generation');
-
-      const data = await response.json();
       
       if (data.success) {
         toast.success('Logo generation started! This may take 1-2 minutes.');
@@ -139,14 +115,9 @@ const LogoGenerator = () => {
 
   const handleSetPrimary = async (assetId) => {
     try {
-      const response = await fetch(`/api/logos/assets/${assetId}/primary`, {
+      const data = await apiRequest(`/api/logos/assets/${assetId}/primary`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
-
-      if (!response.ok) throw new Error('Failed to set primary logo');
 
       // Update the logos in state
       setLogos(prev => 
@@ -170,14 +141,9 @@ const LogoGenerator = () => {
     }
 
     try {
-      const response = await fetch(`/api/logos/assets/${assetId}`, {
+      const data = await apiRequest(`/api/logos/assets/${assetId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
-
-      if (!response.ok) throw new Error('Failed to delete logo');
 
       setLogos(prev => prev.filter(logo => logo.id !== assetId));
       toast.success('Logo deleted successfully');
