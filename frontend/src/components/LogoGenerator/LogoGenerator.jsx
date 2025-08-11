@@ -59,7 +59,7 @@ const LogoGenerator = () => {
 
       const response = await fetch(`/api/logos/assets?${params}`, {
         headers: {
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
       });
 
@@ -80,7 +80,7 @@ const LogoGenerator = () => {
     try {
       const response = await fetch('/api/logos/jobs', {
         headers: {
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
       });
 
@@ -112,7 +112,7 @@ const LogoGenerator = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -142,7 +142,7 @@ const LogoGenerator = () => {
       const response = await fetch(`/api/logos/assets/${assetId}/primary`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
       });
 
@@ -173,7 +173,7 @@ const LogoGenerator = () => {
       const response = await fetch(`/api/logos/assets/${assetId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
       });
 

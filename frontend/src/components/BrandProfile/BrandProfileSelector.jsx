@@ -20,7 +20,7 @@ const BrandProfileSelector = ({ selectedProfile, onProfileChange, allowNone = fa
       setLoading(true);
       const response = await fetch('/api/brand/profiles', {
         headers: {
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
       });
 

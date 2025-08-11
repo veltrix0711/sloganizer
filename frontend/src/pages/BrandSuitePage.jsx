@@ -19,6 +19,7 @@ import BrandExportGenerator from '../components/BrandExport/BrandExportGenerator
 const BrandSuitePage = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profiles');
+  const [tabKey, setTabKey] = useState(0);
 
   const tabs = [
     {
@@ -53,20 +54,25 @@ const BrandSuitePage = () => {
     }
   ];
 
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setTabKey(prev => prev + 1); // Force re-render to reset component state
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'profiles':
-        return <BrandProfileManager />;
+        return <BrandProfileManager key={`profiles-${tabKey}`} />;
       case 'names':
-        return <NameGenerator />;
+        return <NameGenerator key={`names-${tabKey}`} />;
       case 'logos':
-        return <LogoGenerator />;
+        return <LogoGenerator key={`logos-${tabKey}`} />;
       case 'social':
-        return <SocialPostsGenerator />;
+        return <SocialPostsGenerator key={`social-${tabKey}`} />;
       case 'exports':
-        return <BrandExportGenerator />;
+        return <BrandExportGenerator key={`exports-${tabKey}`} />;
       default:
-        return <BrandProfileManager />;
+        return <BrandProfileManager key={`profiles-${tabKey}`} />;
     }
   };
 
@@ -103,7 +109,7 @@ const BrandSuitePage = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'

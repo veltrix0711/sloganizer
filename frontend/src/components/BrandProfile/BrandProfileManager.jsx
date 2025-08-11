@@ -34,9 +34,17 @@ const BrandProfileManager = () => {
   const loadProfiles = async () => {
     try {
       setLoading(true);
+      
+      // Get auth token properly
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      console.log('🔍 Loading brand profiles...', { token: token ? 'Present' : 'Missing' });
+      
       const response = await fetch('/api/brand/profiles', {
         headers: {
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
       });
 
@@ -76,7 +84,7 @@ const BrandProfileManager = () => {
       const response = await fetch(`/api/brand/profiles/${profileId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
       });
 
@@ -102,7 +110,7 @@ const BrandProfileManager = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
         body: JSON.stringify({ is_default: true }),
       });
@@ -130,7 +138,7 @@ const BrandProfileManager = () => {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
         body: JSON.stringify(formData),
       });
