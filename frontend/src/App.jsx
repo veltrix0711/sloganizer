@@ -13,6 +13,7 @@ import PricingPage from './pages/PricingPage'
 import SuccessPage from './pages/SuccessPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProfilePage from './pages/ProfilePage'
+import BrandSuitePage from './pages/BrandSuitePage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Components
@@ -63,6 +64,11 @@ function App() {
           <Route path="/profile" element={
             <PrivateRoute>
               <ProfilePage />
+            </PrivateRoute>
+          } />
+          <Route path="/brand-suite" element={
+            <PrivateRoute>
+              <BrandSuitePage />
             </PrivateRoute>
           } />
           

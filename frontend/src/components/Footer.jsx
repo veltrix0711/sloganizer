@@ -15,7 +15,7 @@ const Footer = () => {
                 <Zap className="h-5 w-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">
-                Marketing Sloganizer
+                Launchzone
               </span>
             </Link>
             <p className="text-gray-600 mb-4 max-w-md">
@@ -122,7 +122,7 @@ const Footer = () => {
         {/* Bottom section */}
         <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm">
-            © {currentYear} Marketing Sloganizer. All rights reserved.
+            © {currentYear} Launchzone. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0 flex space-x-6">
             <span className="text-xs text-gray-400">

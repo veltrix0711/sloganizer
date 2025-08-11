@@ -1,7 +1,120 @@
 import { Check, Zap } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useAuth } from '../services/authContext'
+import api from '../services/api'
+import toast from 'react-hot-toast'
 
 const PricingPage = () => {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(null)
+
+  // Handle Stripe redirect
+  const redirectToStripe = async (sessionId) => {
+    try {
+      const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: sessionId
+      })
+      
+      if (error) {
+        console.error('Stripe redirect error:', error)
+        toast.error('Failed to redirect to checkout')
+      }
+    } catch (error) {
+      console.error('Stripe setup error:', error)
+      toast.error('Payment system error')
+    }
+  }
+
+  // Handle subscription plan selection
+  const handlePlanSelect = async (planName) => {
+    if (planName === 'Free') {
+      if (user) {
+        navigate('/dashboard')
+      } else {
+        navigate('/signup')
+      }
+      return
+    }
+
+    if (!user) {
+      navigate('/signup')
+      return
+    }
+
+    try {
+      setLoading(planName)
+      
+      console.log('Starting checkout process for plan:', planName)
+      console.log('User:', user)
+
+      // Get the price ID for the plan from backend
+      const plansResponse = await api.getSubscriptionPlans()
+      console.log('Available plans from backend:', plansResponse.plans)
+      
+      // Match by plan ID instead of name (Pro -> pro, Agency -> agency)
+      const planId = planName.toLowerCase()
+      const selectedPlan = plansResponse.plans.find(plan => 
+        plan.id === planId
+      )
+      
+      if (!selectedPlan) {
+        throw new Error(`Plan "${planName}" not found`)
+      }
+
+      const priceId = selectedPlan.pricing.monthly.priceId
+      console.log('Using price ID from backend:', priceId)
+
+      // Create checkout session via backend
+      const sessionResponse = await api.createCheckoutSession(priceId, planName)
+      console.log('Backend session response:', sessionResponse)
+
+      // Load Stripe.js if not already loaded
+      if (!window.Stripe) {
+        console.log('Loading Stripe.js...')
+        const script = document.createElement('script')
+        script.src = 'https://js.stripe.com/v3/'
+        await new Promise((resolve, reject) => {
+          script.onload = () => {
+            console.log('Stripe.js loaded successfully')
+            resolve()
+          }
+          script.onerror = (error) => {
+            console.error('Failed to load Stripe.js:', error)
+            reject(error)
+          }
+          document.head.appendChild(script)
+        })
+      }
+
+      // Create Stripe instance and redirect to checkout
+      const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+      
+      if (!stripe) {
+        throw new Error('Failed to initialize Stripe')
+      }
+      
+      console.log('Redirecting to Stripe checkout with session:', sessionResponse.sessionId)
+      
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: sessionResponse.sessionId
+      })
+      
+      if (error) {
+        console.error('Stripe checkout error:', error)
+        toast.error('Payment system error: ' + error.message)
+      }
+      
+    } catch (error) {
+      console.error('Checkout error details:', error)
+      toast.error('Checkout failed: ' + (error.message || 'Unknown error'))
+    } finally {
+      setLoading(null)
+    }
+  }
+
   const plans = [
     {
       name: 'Free',
@@ -9,7 +122,8 @@ const PricingPage = () => {
       period: '/month',
       description: 'Perfect for trying out our service',
       features: [
-        '5 slogan generations per month',
+        '1 slogan generation (unauthenticated)',
+        '3 slogans per generation when signed up',
         'Basic personality options',
         'Text export only',
         'Community support'
@@ -29,7 +143,7 @@ const PricingPage = () => {
         'Favorites management',
         'Email support'
       ],
-      cta: 'Start Pro Trial',
+      cta: 'Start Pro Plan',
       popular: true
     },
     {
@@ -38,14 +152,14 @@ const PricingPage = () => {
       period: '/month',
       description: 'For marketing agencies and large teams',
       features: [
-        '1000 slogan generations per month',
+        'Unlimited slogan generations',
         'Advanced AI models',
         'All export formats',
         'Priority support',
-        'API access',
-        'Team collaboration'
+        'Bulk generation capabilities',
+        'Team collaboration features'
       ],
-      cta: 'Contact Sales',
+      cta: 'Start Agency Plan',
       popular: false
     }
   ]
@@ -99,11 +213,13 @@ const PricingPage = () => {
               </ul>
               
               <button
+                onClick={() => handlePlanSelect(plan.name)}
+                disabled={loading === plan.name}
                 className={`btn w-full ${
                   plan.popular ? 'btn-brand' : 'btn-outline'
-                }`}
+                } ${loading === plan.name ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {plan.cta}
+                {loading === plan.name ? 'Loading...' : plan.cta}
               </button>
             </div>
           ))}

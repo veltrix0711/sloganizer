@@ -72,17 +72,18 @@ const GeneratorPage = () => {
 
     try {
       const response = await api.generateSlogan({
-        businessName: formData.businessName.trim(),
+        companyName: formData.businessName.trim(),
         industry: formData.industry,
-        personality: formData.personality,
-        targetAudience: (formData.targetAudience ?? '').toString().trim(),
+        brandPersonality: formData.personality,
         keywords: formData.keywords,
-        userId: user?.id || null
+        tone: 'casual' // default tone since the form doesn't have this field yet
       })
 
       if (response.success) {
-        setGeneratedSlogans(response.data.slogans || [])
-        setRemainingFreeGenerations(response.remainingFreeGenerations)
+        console.log('Frontend received response:', response)
+        console.log('Slogans from response:', response.slogans)
+        setGeneratedSlogans(response.slogans || [])
+        setRemainingFreeGenerations(response.remaining)
       }
     } catch (error) {
       console.error('Generation error:', error)
@@ -124,13 +125,13 @@ const GeneratorPage = () => {
 
     try {
       await api.saveFavorite({
-        sloganText: slogan.text,
+        sloganText: slogan,
         businessName: formData.businessName,
         industry: formData.industry,
         personality: formData.personality,
         targetAudience: formData.targetAudience || null,
         keywords: formData.keywords,
-        explanation: slogan.explanation || null
+        explanation: null
       })
     } catch (error) {
       // Error handling is done in the api service
@@ -361,11 +362,11 @@ const GeneratorPage = () => {
                     >
                       <div className="flex items-start justify-between mb-3">
                         <h3 className="text-lg font-medium text-gray-900 flex-1">
-                          "{slogan.text}"
+                          "{slogan}"
                         </h3>
                         <div className="flex space-x-2 ml-4">
                           <button
-                            onClick={() => copySlogan(slogan.text)}
+                            onClick={() => copySlogan(slogan)}
                             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                             title="Copy to clipboard"
                           >

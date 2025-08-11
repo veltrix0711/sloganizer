@@ -30,7 +30,7 @@ const HomePage = () => {
       name: 'Sarah Johnson',
       role: 'Marketing Director',
       company: 'TechStart Inc.',
-      content: 'Marketing Sloganizer helped us create the perfect tagline for our product launch. The AI suggestions were spot-on!',
+      content: 'Launchzone helped us create the perfect tagline for our product launch. The AI suggestions were spot-on!',
       rating: 5
     },
     {
@@ -178,7 +178,7 @@ const HomePage = () => {
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Join thousands of marketers, entrepreneurs, and agencies who trust 
-              Marketing Sloganizer for their creative campaigns.
+              Launchzone for their creative campaigns.
             </p>
           </div>
 

@@ -13,7 +13,12 @@
       "Bash(railway:*)",
       "Bash(curl:*)",
       "Bash(cp:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "WebFetch(domain:sloganizer-frontend-production.up.railway.app)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:sloganixerbackend-production.up.railway.app)",
+      "Bash(start debug-test.html)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

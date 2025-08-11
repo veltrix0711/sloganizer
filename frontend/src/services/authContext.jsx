@@ -19,25 +19,63 @@ export const AuthProvider = ({ children }) => {
   const [sessionLoading, setSessionLoading] = useState(false)
 
   useEffect(() => {
+    // Test Supabase connection first
+    const testConnection = async () => {
+      try {
+        console.log('AuthContext: Testing Supabase connection...')
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id')
+          .limit(1)
+        
+        if (error) {
+          console.error('AuthContext: Supabase connection test failed:', error)
+        } else {
+          console.log('AuthContext: Supabase connection successful')
+        }
+      } catch (error) {
+        console.error('AuthContext: Supabase connection error:', error)
+      }
+    }
+
     // Get initial session
     const getSession = async () => {
       try {
+        await testConnection()
+        
+        console.log('AuthContext: Getting initial session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error('Error getting session:', error)
         } else if (session) {
+          console.log('AuthContext: Session found, fetching profile...')
           setUser(session.user)
           await fetchUserProfile(session.user.id)
+        } else {
+          console.log('AuthContext: No session found')
         }
       } catch (error) {
         console.error('Session error:', error)
       } finally {
+        console.log('AuthContext: Setting loading to false')
         setLoading(false)
       }
     }
 
-    getSession()
+    // Add timeout to prevent hanging
+    const sessionTimeout = setTimeout(() => {
+      console.warn('AuthContext: Session loading timed out, setting loading to false')
+      setLoading(false)
+    }, 5000) // 5 second timeout - give more time for profile operations
+
+    getSession().then(() => {
+      clearTimeout(sessionTimeout)
+    }).catch((error) => {
+      console.error('AuthContext: Error in getSession:', error)
+      clearTimeout(sessionTimeout)
+      setLoading(false)
+    })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -64,56 +102,92 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (userId) => {
     try {
-      const { data, error } = await supabase
+      console.log('AuthContext: Fetching user profile for:', userId)
+      
+      // Add timeout to profile query to prevent hanging
+      const profilePromise = supabase
         .from(TABLES.USER_PROFILES)
         .select('*')
-        .eq('user_id', userId)
+        .eq('id', userId)
         .single()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile query timeout')), 8000)
+      )
+
+      const { data, error } = await Promise.race([profilePromise, timeoutPromise])
+
+      if (error) {
         console.error('Error fetching profile:', error)
+        if (error.code === 'PGRST116') {
+          console.log('AuthContext: No profile found (PGRST116), creating one...')
+          await createUserProfile(userId)
+          return
+        }
+        
+        // For other errors, continue without profile to prevent infinite loading
+        console.warn('AuthContext: Continuing without profile due to error:', error)
         return
       }
 
       if (data) {
+        console.log('AuthContext: Profile found:', data)
         setProfile(data)
       } else {
-        // Create profile if it doesn't exist
+        console.log('AuthContext: No profile data, creating one...')
         await createUserProfile(userId)
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
+      if (error.message === 'Profile query timeout') {
+        console.warn('AuthContext: Profile query timed out, continuing without profile')
+      }
+      // Continue without profile rather than hanging
     }
   }
 
   const createUserProfile = async (userId) => {
     try {
+      console.log('AuthContext: Creating user profile for:', userId)
       const { data: userData } = await supabase.auth.getUser()
       
       const profileData = {
-        user_id: userId,
+        id: userId,
         email: userData.user?.email || '',
         first_name: userData.user?.user_metadata?.first_name || '',
         last_name: userData.user?.user_metadata?.last_name || '',
-        subscription_tier: 'free',
+        subscription_plan: 'free',
         subscription_status: 'active',
-        usage_count: 0
+        slogans_remaining: 3
       }
 
-      const { data, error } = await supabase
+      console.log('AuthContext: Inserting profile data:', profileData)
+      
+      // Add timeout to profile creation
+      const insertPromise = supabase
         .from(TABLES.USER_PROFILES)
         .insert(profileData)
         .select()
         .single()
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile creation timeout')), 8000)
+      )
+
+      const { data, error } = await Promise.race([insertPromise, timeoutPromise])
 
       if (error) {
         console.error('Error creating profile:', error)
         return
       }
 
+      console.log('AuthContext: Profile created:', data)
       setProfile(data)
     } catch (error) {
       console.error('Error creating user profile:', error)
+      if (error.message === 'Profile creation timeout') {
+        console.warn('AuthContext: Profile creation timed out')
+      }
     }
   }
 
@@ -236,7 +310,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase
         .from(TABLES.USER_PROFILES)
         .update(updates)
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .select()
         .single()
 

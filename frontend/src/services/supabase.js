@@ -17,9 +17,9 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 
 // Database table names
 export const TABLES = {
-  USER_PROFILES: 'user_profiles',
-  SAVED_SLOGANS: 'saved_slogans',
-  GENERATION_HISTORY: 'generation_history',
+  USER_PROFILES: 'profiles',
+  SAVED_SLOGANS: 'favorites', 
+  GENERATION_HISTORY: 'slogans',
   SUBSCRIPTION_PLANS: 'subscription_plans'
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Zap, User, LogOut, Heart, Settings } from 'lucide-react'
+import { Menu, X, Zap, User, LogOut, Heart, Settings, Building } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 
 const Navbar = () => {
@@ -25,6 +25,7 @@ const Navbar = () => {
     { name: 'Generate', href: '/generate', public: true },
     { name: 'Pricing', href: '/pricing', public: true },
     { name: 'Dashboard', href: '/dashboard', private: true },
+    { name: 'Brand Suite', href: '/brand-suite', private: true },
     { name: 'Favorites', href: '/favorites', private: true }
   ]
 
@@ -42,7 +43,7 @@ const Navbar = () => {
               <Zap className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">
-              Marketing Sloganizer
+              Launchzone
             </span>
           </Link>
 
@@ -95,6 +96,15 @@ const Navbar = () => {
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Dashboard
+                    </Link>
+                    
+                    <Link
+                      to="/brand-suite"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <Building className="h-4 w-4 mr-2" />
+                      Brand Suite
                     </Link>
                     
                     <Link
@@ -191,6 +201,15 @@ const Navbar = () => {
                   </div>
                   
                   <div className="flex flex-col space-y-3">
+                    <Link
+                      to="/brand-suite"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center text-sm text-gray-600"
+                    >
+                      <Building className="h-4 w-4 mr-2" />
+                      Brand Suite
+                    </Link>
+                    
                     <Link
                       to="/profile"
                       onClick={() => setIsMenuOpen(false)}
