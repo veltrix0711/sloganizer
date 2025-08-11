@@ -101,7 +101,7 @@ const ExportCard = ({ exportItem, exportType, onDownload, onDelete }) => {
               <TypeIcon className={`w-5 h-5 ${exportType?.color || 'text-gray-600'}`} />
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">{exportType?.name || `${type.toUpperCase()} Export`}</h3>
+              <h3 className="font-medium text-gray-900">{exportType?.name || `${type?.toUpperCase() || 'BRAND'} Export`}</h3>
               <p className="text-sm text-gray-500">{exportType?.description}</p>
             </div>
           </div>

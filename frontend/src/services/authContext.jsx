@@ -100,8 +100,25 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Cache and debounce profile fetches
+  const profileCache = React.useRef({})
+  const fetchingProfiles = React.useRef(new Set())
+
   const fetchUserProfile = async (userId) => {
     try {
+      // Return cached profile if available
+      if (profileCache.current[userId]) {
+        console.log('AuthContext: Using cached profile for:', userId)
+        return profileCache.current[userId]
+      }
+
+      // Prevent concurrent fetches for the same user
+      if (fetchingProfiles.current.has(userId)) {
+        console.log('AuthContext: Profile fetch already in progress for:', userId)
+        return null
+      }
+
+      fetchingProfiles.current.add(userId)
       console.log('AuthContext: Fetching user profile for:', userId)
       
       // Add timeout to profile query to prevent hanging
@@ -118,6 +135,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await Promise.race([profilePromise, timeoutPromise])
 
       if (error) {
+        fetchingProfiles.current.delete(userId)
         console.error('Error fetching profile:', error)
         if (error.code === 'PGRST116') {
           console.log('AuthContext: No profile found (PGRST116), creating one...')
@@ -132,12 +150,16 @@ export const AuthProvider = ({ children }) => {
 
       if (data) {
         console.log('AuthContext: Profile found:', data)
+        profileCache.current[userId] = data
         setProfile(data)
       } else {
         console.log('AuthContext: No profile data, creating one...')
         await createUserProfile(userId)
       }
+      
+      fetchingProfiles.current.delete(userId)
     } catch (error) {
+      fetchingProfiles.current.delete(userId)
       console.error('Error fetching user profile:', error)
       if (error.message === 'Profile query timeout') {
         console.warn('AuthContext: Profile query timed out, continuing without profile')
