@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { supabase, TABLES } from './supabase'
 import toast from 'react-hot-toast'
 
@@ -101,8 +101,8 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   // Cache and debounce profile fetches
-  const profileCache = React.useRef({})
-  const fetchingProfiles = React.useRef(new Set())
+  const profileCache = useRef({})
+  const fetchingProfiles = useRef(new Set())
 
   const fetchUserProfile = async (userId) => {
     try {
