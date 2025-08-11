@@ -26,17 +26,19 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading Marketing Sloganizer...</p>
+          <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-cyan-500/25">
+            <Loader2 className="h-8 w-8 animate-spin text-white" />
+          </div>
+          <p className="text-slate-300 text-lg">Loading LaunchZone...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-900 flex flex-col">
       <Navbar />
       
       <main className="flex-1">
