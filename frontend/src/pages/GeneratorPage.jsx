@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Wand2, Copy, Heart, Download, RefreshCw, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { Wand2, Copy, Heart, Download, RefreshCw, AlertCircle, CheckCircle, Loader2, Sparkles, Rocket, Zap } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 import { INDUSTRIES, BRAND_PERSONALITIES, formatPersonality, formatIndustry } from '../services/supabase'
 import api from '../services/api'
@@ -139,22 +139,36 @@ const GeneratorPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-900 py-8">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Generate Your Perfect Marketing Slogan
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center shadow-2xl shadow-cyan-500/25">
+              <Wand2 className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+              Slogan Generator
+            </span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Tell us about your business and we'll create unique, memorable slogans 
-            that capture your brand's personality.
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            Create compelling marketing slogans that capture your brand's essence and resonate 
+            with your target audience using our AI-powered generator.
           </p>
           
           {/* Free generations remaining indicator */}
           {!user && remainingFreeGenerations !== null && (
-            <div className="mt-4 inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm text-blue-700">
-              <AlertCircle className="h-4 w-4 mr-1" />
+            <div className="mt-6 inline-flex items-center px-4 py-2 bg-slate-800/50 border border-cyan-500/50 rounded-full text-sm text-cyan-300 backdrop-blur-sm">
+              <Zap className="h-4 w-4 mr-2 text-cyan-400" />
               {remainingFreeGenerations} free generation{remainingFreeGenerations !== 1 ? 's' : ''} remaining
             </div>
           )}
@@ -162,16 +176,16 @@ const GeneratorPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Form */}
-          <div className="card">
+          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 shadow-2xl">
             <form onSubmit={(e) => { e.preventDefault(); generateSlogans(); }}>
               {/* Business Name */}
               <div className="mb-6">
-                <label className="form-label">
+                <label className="block text-sm font-bold text-white mb-3">
                   Business Name *
                 </label>
                 <input
                   type="text"
-                  className="form-input"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-200"
                   placeholder="Enter your business name..."
                   value={formData.businessName}
                   onChange={(e) => handleInputChange('businessName', e.target.value)}
@@ -181,11 +195,11 @@ const GeneratorPage = () => {
 
               {/* Industry */}
               <div className="mb-6">
-                <label className="form-label">
+                <label className="block text-sm font-bold text-white mb-3">
                   Industry *
                 </label>
                 <select
-                  className="form-input"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-200"
                   value={formData.industry}
                   onChange={(e) => handleInputChange('industry', e.target.value)}
                 >
@@ -200,7 +214,7 @@ const GeneratorPage = () => {
 
               {/* Brand Personality */}
               <div className="mb-6">
-                <label className="form-label">
+                <label className="block text-sm font-bold text-white mb-3">
                   Brand Personality
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
@@ -209,8 +223,8 @@ const GeneratorPage = () => {
                       key={personality}
                       className={`relative flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
                         formData.personality === personality
-                          ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-cyan-500 bg-cyan-500/10 text-cyan-300'
+                          : 'border-slate-600 hover:border-slate-500 text-slate-300'
                       }`}
                     >
                       <input
@@ -227,7 +241,7 @@ const GeneratorPage = () => {
                         </span>
                       </div>
                       {formData.personality === personality && (
-                        <CheckCircle className="h-4 w-4 text-primary-600" />
+                        <CheckCircle className="h-4 w-4 text-cyan-400" />
                       )}
                     </label>
                   ))}
@@ -236,38 +250,38 @@ const GeneratorPage = () => {
 
               {/* Target Audience */}
               <div className="mb-6">
-                <label className="form-label">
+                <label className="block text-sm font-bold text-white mb-3">
                   Target Audience (Optional)
                 </label>
                 <input
                   type="text"
-                  className="form-input"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-200"
                   placeholder="e.g., Young professionals, Families, Tech enthusiasts..."
                   value={formData.targetAudience}
                   onChange={(e) => handleInputChange('targetAudience', e.target.value)}
                   maxLength={200}
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-slate-400 mt-2">
                   Help us tailor slogans to your specific audience
                 </p>
               </div>
 
               {/* Keywords */}
               <div className="mb-8">
-                <label className="form-label">
+                <label className="block text-sm font-bold text-white mb-3">
                   Keywords (Optional, max 5)
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.keywords.map((keyword, index) => (
                     <span 
                       key={index}
-                      className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                      className="inline-flex items-center px-3 py-1 bg-cyan-500/20 text-cyan-300 text-sm rounded-full border border-cyan-500/30"
                     >
                       {keyword}
                       <button
                         type="button"
                         onClick={() => removeKeyword(keyword)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        className="ml-2 text-cyan-400 hover:text-cyan-200 transition-colors"
                       >
                         ×
                       </button>
@@ -277,7 +291,7 @@ const GeneratorPage = () => {
                 <div className="flex">
                   <input
                     type="text"
-                    className="form-input flex-1 rounded-r-none"
+                    className="flex-1 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-l-lg text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-200"
                     placeholder="Add a keyword..."
                     value={keywordInput}
                     onChange={(e) => setKeywordInput(e.target.value)}
@@ -288,20 +302,20 @@ const GeneratorPage = () => {
                   <button
                     type="button"
                     onClick={addKeyword}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-3 bg-slate-600 text-white border border-l-0 border-slate-600 rounded-r-lg hover:bg-slate-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!keywordInput.trim() || formData.keywords.length >= 5}
                   >
                     Add
                   </button>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-slate-400 mt-2">
                   Words or phrases that should influence the slogan style
                 </p>
               </div>
 
               {/* Error Display */}
               {error && (
-                <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-300 text-sm backdrop-blur-sm">
                   <AlertCircle className="h-4 w-4 inline mr-2" />
                   {error}
                 </div>
@@ -311,7 +325,7 @@ const GeneratorPage = () => {
               <button
                 type="submit"
                 disabled={isGenerating || !formData.businessName.trim() || !formData.industry}
-                className="btn btn-brand w-full btn-lg group"
+                className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg font-bold text-white shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none group"
               >
                 {isGenerating ? (
                   <>
@@ -327,8 +341,8 @@ const GeneratorPage = () => {
               </button>
 
               {!user && (
-                <p className="text-sm text-gray-500 text-center mt-3">
-                  <Link to="/signup" className="text-primary-600 hover:text-primary-700">
+                <p className="text-sm text-slate-400 text-center mt-4">
+                  <Link to="/signup" className="text-cyan-400 hover:text-cyan-300 transition-colors">
                     Create a free account
                   </Link> to save favorites and get more generations
                 </p>
@@ -339,15 +353,16 @@ const GeneratorPage = () => {
           {/* Generated Slogans */}
           <div>
             {generatedSlogans.length > 0 ? (
-              <div className="card">
+              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-2xl font-bold text-white flex items-center">
+                    <Sparkles className="h-6 w-6 text-cyan-400 mr-2" />
                     Generated Slogans
                   </h2>
                   <button
                     onClick={generateSlogans}
                     disabled={isGenerating}
-                    className="btn btn-outline btn-sm group"
+                    className="px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-600/50 hover:border-cyan-500/50 hover:text-cyan-400 transition-all duration-200 group"
                   >
                     <RefreshCw className={`h-4 w-4 mr-2 group-hover:rotate-180 transition-transform ${isGenerating ? 'animate-spin' : ''}`} />
                     Regenerate
@@ -358,16 +373,16 @@ const GeneratorPage = () => {
                   {generatedSlogans.map((slogan, index) => (
                     <div 
                       key={index} 
-                      className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors duration-200"
+                      className="p-6 border border-slate-600 rounded-xl hover:border-cyan-500/50 bg-slate-700/30 hover:bg-slate-700/50 transition-all duration-200 group"
                     >
                       <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-lg font-medium text-gray-900 flex-1">
+                        <h3 className="text-lg font-medium text-white flex-1">
                           "{slogan}"
                         </h3>
                         <div className="flex space-x-2 ml-4">
                           <button
                             onClick={() => copySlogan(slogan)}
-                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                            className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-slate-600/50 rounded-lg transition-all duration-200"
                             title="Copy to clipboard"
                           >
                             <Copy className="h-4 w-4" />
@@ -375,7 +390,7 @@ const GeneratorPage = () => {
                           {user && (
                             <button
                               onClick={() => saveSlogan(slogan)}
-                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                              className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
                               title="Save to favorites"
                             >
                               <Heart className="h-4 w-4" />
@@ -385,8 +400,8 @@ const GeneratorPage = () => {
                       </div>
                       
                       {slogan.explanation && (
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                          <strong>Why this works:</strong> {slogan.explanation}
+                        <p className="text-sm text-slate-300 bg-slate-600/30 p-3 rounded-lg">
+                          <strong className="text-cyan-400">Why this works:</strong> {slogan.explanation}
                         </p>
                       )}
                     </div>
@@ -394,21 +409,21 @@ const GeneratorPage = () => {
                 </div>
 
                 {!user && (
-                  <div className="mt-6 p-4 bg-gradient-to-r from-brand-50 to-primary-50 rounded-lg border border-brand-200">
-                    <div className="flex items-center mb-2">
-                      <Heart className="h-5 w-5 text-brand-600 mr-2" />
-                      <h3 className="font-medium text-brand-900">
+                  <div className="mt-8 p-6 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl border border-orange-500/30 backdrop-blur-sm">
+                    <div className="flex items-center mb-3">
+                      <Heart className="h-5 w-5 text-orange-400 mr-2" />
+                      <h3 className="font-bold text-orange-300">
                         Love these slogans?
                       </h3>
                     </div>
-                    <p className="text-brand-700 text-sm mb-3">
+                    <p className="text-orange-200 text-sm mb-4">
                       Create a free account to save your favorites, get more generations, and export your slogans.
                     </p>
                     <div className="flex space-x-3">
-                      <Link to="/signup" className="btn btn-brand btn-sm">
+                      <Link to="/signup" className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                         Sign Up Free
                       </Link>
-                      <Link to="/login" className="btn btn-outline btn-sm">
+                      <Link to="/login" className="px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg font-semibold text-slate-300 hover:bg-slate-600/50 hover:border-orange-500/50 hover:text-orange-400 transition-all duration-200">
                         Sign In
                       </Link>
                     </div>
@@ -416,14 +431,16 @@ const GeneratorPage = () => {
                 )}
               </div>
             ) : (
-              <div className="card text-center">
-                <Wand2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  Ready to Generate Slogans?
+              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-12 text-center shadow-2xl">
+                <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-cyan-500/25">
+                  <Wand2 className="h-10 w-10 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Ready to <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">Generate</span>?
                 </h2>
-                <p className="text-gray-600">
-                  Fill in your business details on the left and click "Generate Slogans" 
-                  to see your personalized marketing messages appear here.
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  Fill in your business details and let our AI create compelling slogans 
+                  that perfectly capture your brand's essence.
                 </p>
               </div>
             )}

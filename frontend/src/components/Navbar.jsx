@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Zap, User, LogOut, Heart, Settings, Building } from 'lucide-react'
+import { Menu, X, Rocket, User, LogOut, Heart, Settings, Building } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 
 const Navbar = () => {
@@ -34,16 +34,19 @@ const Navbar = () => {
   )
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50 shadow-2xl shadow-slate-900/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-brand-500 to-primary-600 rounded-lg flex items-center justify-center">
-              <Zap className="h-5 w-5 text-white" />
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/25 group-hover:shadow-cyan-500/40 transition-all duration-300">
+                <Rocket className="h-5 w-5 text-white" />
+              </div>
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
             </div>
-            <span className="text-xl font-bold text-gray-900">
-              Launchzone
+            <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+              LaunchZone
             </span>
           </Link>
 
@@ -53,13 +56,19 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 ${
+                className={`text-sm font-medium transition-all duration-300 relative group ${
                   isActivePath(item.href)
-                    ? 'text-primary-600 border-b-2 border-primary-600 pb-1'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'text-cyan-400'
+                    : 'text-slate-300 hover:text-cyan-400'
                 }`}
               >
                 {item.name}
+                {isActivePath(item.href) && (
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full"></div>
+                )}
+                {!isActivePath(item.href) && (
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                )}
               </Link>
             ))}
           </div>
@@ -70,21 +79,21 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-sm bg-slate-800/50 hover:bg-slate-700/50 border border-slate-600 hover:border-cyan-500/50 rounded-full px-4 py-2 transition-all duration-300"
                 >
-                  <User className="h-5 w-5 text-gray-600" />
-                  <span className="text-gray-700 font-medium">
+                  <User className="h-4 w-4 text-slate-300" />
+                  <span className="text-slate-300 font-medium">
                     {user.email?.split('@')[0]}
                   </span>
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
+                  <div className="absolute right-0 mt-2 w-64 bg-slate-800/95 backdrop-blur-sm rounded-xl shadow-2xl shadow-black/20 border border-slate-700 py-2">
+                    <div className="px-4 py-3 border-b border-slate-600">
+                      <p className="text-sm font-medium text-white">
                         {user.email}
                       </p>
-                      <p className="text-xs text-gray-500 capitalize">
+                      <p className="text-xs text-slate-400 capitalize">
                         {profile?.subscription_tier || 'free'} plan
                       </p>
                     </div>
@@ -92,46 +101,46 @@ const Navbar = () => {
                     <Link
                       to="/dashboard"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
                     >
-                      <Settings className="h-4 w-4 mr-2" />
+                      <Settings className="h-4 w-4 mr-3" />
                       Dashboard
                     </Link>
                     
                     <Link
                       to="/brand-suite"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
                     >
-                      <Building className="h-4 w-4 mr-2" />
+                      <Building className="h-4 w-4 mr-3" />
                       Brand Suite
                     </Link>
                     
                     <Link
                       to="/favorites"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
                     >
-                      <Heart className="h-4 w-4 mr-2" />
+                      <Heart className="h-4 w-4 mr-3" />
                       Favorites
                     </Link>
                     
                     <Link
                       to="/profile"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
                     >
-                      <User className="h-4 w-4 mr-2" />
+                      <User className="h-4 w-4 mr-3" />
                       Profile
                     </Link>
                     
-                    <hr className="my-2" />
+                    <div className="my-2 border-t border-slate-600"></div>
                     
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200"
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
+                      <LogOut className="h-4 w-4 mr-3" />
                       Sign Out
                     </button>
                   </div>
@@ -141,13 +150,13 @@ const Navbar = () => {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                  className="text-sm font-medium text-slate-300 hover:text-cyan-400 transition-colors duration-200"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="btn btn-brand btn-sm"
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg font-semibold text-white text-sm shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 hover:scale-105"
                 >
                   Get Started
                 </Link>
@@ -159,7 +168,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200"
+              className="p-2 rounded-lg text-slate-300 hover:text-cyan-400 hover:bg-slate-800/50 transition-all duration-200"
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -172,7 +181,7 @@ const Navbar = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="md:hidden border-t border-slate-700 py-4">
             <div className="flex flex-col space-y-4">
               {filteredNavItems.map((item) => (
                 <Link
@@ -181,8 +190,8 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                   className={`text-base font-medium transition-colors duration-200 ${
                     isActivePath(item.href)
-                      ? 'text-primary-600'
-                      : 'text-gray-600'
+                      ? 'text-cyan-400'
+                      : 'text-slate-300 hover:text-cyan-400'
                   }`}
                 >
                   {item.name}
@@ -190,12 +199,12 @@ const Navbar = () => {
               ))}
               
               {user ? (
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-slate-700">
                   <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-white">
                       {user.email}
                     </p>
-                    <p className="text-xs text-gray-500 capitalize">
+                    <p className="text-xs text-slate-400 capitalize">
                       {profile?.subscription_tier || 'free'} plan
                     </p>
                   </div>
@@ -204,7 +213,7 @@ const Navbar = () => {
                     <Link
                       to="/brand-suite"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center text-sm text-gray-600"
+                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
                     >
                       <Building className="h-4 w-4 mr-2" />
                       Brand Suite
@@ -213,7 +222,7 @@ const Navbar = () => {
                     <Link
                       to="/profile"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center text-sm text-gray-600"
+                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
                     >
                       <User className="h-4 w-4 mr-2" />
                       Profile
@@ -221,7 +230,7 @@ const Navbar = () => {
                     
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center text-sm text-red-600"
+                      className="flex items-center text-sm text-red-400 hover:text-red-300 transition-colors duration-200"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
@@ -229,18 +238,18 @@ const Navbar = () => {
                   </div>
                 </div>
               ) : (
-                <div className="pt-4 border-t border-gray-200 flex flex-col space-y-3">
+                <div className="pt-4 border-t border-slate-700 flex flex-col space-y-3">
                   <Link
                     to="/login"
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-base font-medium text-gray-600"
+                    className="text-base font-medium text-slate-300 hover:text-cyan-400 transition-colors duration-200"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/signup"
                     onClick={() => setIsMenuOpen(false)}
-                    className="btn btn-brand text-center"
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg font-semibold text-white text-center shadow-lg shadow-cyan-500/25"
                   >
                     Get Started
                   </Link>
