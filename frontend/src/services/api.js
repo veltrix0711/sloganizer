@@ -236,7 +236,67 @@ class ApiService {
   }
 
   async getSubscriptionStatus() {
-    return this.request('/api/payments/subscription')
+    return this.request('/api/billing/subscription')
+  }
+
+  // Billing API methods
+  async getBillingUsage() {
+    return this.request('/api/billing/usage')
+  }
+
+  async createBillingCheckout(data) {
+    try {
+      const response = await this.request('/api/billing/checkout', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+      
+      return response
+    } catch (error) {
+      toast.error(error.message || 'Failed to create checkout session')
+      throw error
+    }
+  }
+
+  async getBillingPortal() {
+    try {
+      const response = await this.request('/api/billing/portal', {
+        method: 'GET'
+      })
+      
+      return response
+    } catch (error) {
+      toast.error(error.message || 'Failed to access billing portal')
+      throw error
+    }
+  }
+
+  async getUpgradeSuggestions(limitType = null) {
+    const endpoint = `/api/billing/upgrade-suggestions${limitType ? `?limitType=${limitType}` : ''}`
+    return this.request(endpoint)
+  }
+
+  // HTTP method helpers
+  async get(endpoint) {
+    return this.request(endpoint, { method: 'GET' })
+  }
+
+  async post(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async put(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async delete(endpoint) {
+    return this.request(endpoint, { method: 'DELETE' })
   }
 
   // Health check
