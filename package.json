@@ -24,7 +24,10 @@
     "jsonwebtoken": "^9.0.2",
     "pdfkit": "^0.14.0",
     "csv-stringify": "^6.4.4",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.8",
+    "node-cron": "^3.0.3",
+    "compression": "^1.7.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

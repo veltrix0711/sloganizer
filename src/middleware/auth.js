@@ -1,4 +1,4 @@
-import { supabase } from '../services/supabase.js';
+import { supabase } from '../config/supabase.js';
 
 export const authMiddleware = async (req, res, next) => {
   try {
@@ -42,3 +42,6 @@ export const optionalAuth = async (req, res, next) => {
     next();
   }
 };
+
+// Alias for consistency with billing routes
+export const authenticateUser = authMiddleware;

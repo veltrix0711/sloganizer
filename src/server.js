@@ -14,8 +14,15 @@ import nameGeneratorRoutes from './routes/nameGenerator.js';
 import logoGeneratorRoutes from './routes/logoGenerator.js';
 import socialPostsRoutes from './routes/socialPosts.js';
 import brandExportRoutes from './routes/brandExport.js';
+import billingRoutes from './routes/billing.js';
+import salesRoutes from './routes/sales.js';
+import emailRoutes from './routes/emails.js';
+import webhookRoutes from './routes/webhooks.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
+
+// Jobs and Services
+import lifecycleEmailJob from './jobs/lifecycleEmails.js';
 
 dotenv.config();
 
@@ -48,6 +55,9 @@ const limiter = rateLimit({
   trustProxy: ['127.0.0.1', '::1']
 });
 app.use('/api/', limiter);
+
+// Webhooks route (must be before JSON parsing for Stripe raw body)
+app.use('/api/webhooks', webhookRoutes);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -245,6 +255,11 @@ app.use('/api/payments', (req, res, next) => {
   return authMiddleware(req, res, next);
 }, paymentRoutes);
 
+// New LaunchZone billing and lifecycle routes
+app.use('/api/billing', billingRoutes);
+app.use('/api/sales', salesRoutes);
+app.use('/api/emails', emailRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
@@ -254,8 +269,9 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 LaunchZone API server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`📧 Lifecycle email job scheduled and running`);
   console.log(`🎯 Brand Suite Routes Loaded:`);
   console.log(`   ✓ /api/brand/* - Brand Profile Management`);
   console.log(`   ✓ /api/names/* - Name Generator`);
@@ -263,4 +279,13 @@ app.listen(PORT, () => {
   console.log(`   ✓ /api/social/* - Social Posts`);
   console.log(`   ✓ /api/exports/* - Brand Exports`);
   console.log(`🔐 All Brand Suite routes require authentication`);
+  console.log(`💳 LaunchZone Billing Routes:`);
+  console.log(`   ✓ /api/billing/* - Subscriptions & Usage`);
+  console.log(`   ✓ /api/sales/* - Agency Sales`);
+  console.log(`   ✓ /api/emails/* - Lifecycle Emails`);
+  console.log(`   ✓ /api/webhooks/* - Payment Webhooks`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`💾 Database: ${process.env.SUPABASE_URL ? 'Connected' : 'Not configured'}`);
+  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'Configured' : 'Not configured'}`);
+  console.log(`📨 Email service: ${process.env.EMAIL_PROVIDER || 'SMTP (dev)'}`);
 });
