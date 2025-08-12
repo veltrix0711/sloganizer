@@ -1,0 +1,210 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  /* LaunchZone Brand Colors */
+  --color-night: #0B1220;
+  --color-space: #0F1B2E;
+  --color-electric: #1FB5FF;
+  --color-orange: #FF7A00;
+  --color-teal: #00E5A8;
+  --color-lime: #69FFB1;
+  
+  /* Text Colors */
+  --color-heading: #EAF2FF;
+  --color-body: #B9C7D9;
+  --color-muted: #7F8CA0;
+  
+  /* Glow Colors */
+  --glow-blue: rgba(31, 181, 255, 0.45);
+  --glow-teal: rgba(0, 229, 168, 0.40);
+  --glow-orange: rgba(255, 122, 0, 0.35);
+  
+  /* Gradients */
+  --grad-heat: linear-gradient(135deg, #FF7A00 0%, #1FB5FF 100%);
+  --grad-quantum: linear-gradient(135deg, #FF7A00 0%, #00E5A8 50%, #1FB5FF 100%);
+  --grad-surge: linear-gradient(135deg, #00E5A8 0%, #1FB5FF 100%);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--color-night);
+  color: var(--color-body);
+}
+
+/* Component Base Classes */
+@layer components {
+  /* Button Variants */
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300 hover:scale-105 shadow-glow-blue;
+    background: var(--grad-surge);
+  }
+  
+  .btn-primary:hover {
+    @apply shadow-glow-blue-lg;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 rounded-lg font-semibold text-heading bg-space border border-electric/20 hover:border-electric/40 transition-all duration-300 hover:shadow-glow-blue;
+  }
+  
+  .btn-accent {
+    @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300 hover:scale-105 shadow-glow-orange;
+    background: var(--grad-heat);
+  }
+  
+  .btn-accent:hover {
+    @apply shadow-glow-orange-lg;
+  }
+  
+  /* Card Variants */
+  .card-primary {
+    @apply bg-space border border-electric/10 rounded-xl p-6 transition-all duration-300;
+  }
+  
+  .card-primary:hover {
+    @apply border-electric/20 shadow-glow-blue;
+  }
+  
+  .card-accent {
+    @apply bg-space border border-teal/10 rounded-xl p-6 transition-all duration-300;
+  }
+  
+  .card-accent:hover {
+    @apply border-teal/20 shadow-glow-teal;
+  }
+  
+  /* Badge Variants */
+  .badge-primary {
+    @apply px-3 py-1 rounded-full text-sm font-medium text-electric bg-electric/10 border border-electric/20;
+  }
+  
+  .badge-accent {
+    @apply px-3 py-1 rounded-full text-sm font-medium text-teal bg-teal/10 border border-teal/20;
+  }
+  
+  .badge-warning {
+    @apply px-3 py-1 rounded-full text-sm font-medium text-orange bg-orange/10 border border-orange/20;
+  }
+  
+  /* Gradient Text */
+  .text-gradient-heat {
+    background: var(--grad-heat);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-quantum {
+    background: var(--grad-quantum);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-surge {
+    background: var(--grad-surge);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Input Styles */
+  .input-primary {
+    @apply w-full px-4 py-3 bg-space border border-electric/20 rounded-lg text-heading placeholder-muted focus:border-electric focus:ring-1 focus:ring-electric/50 focus:outline-none transition-all duration-200;
+  }
+  
+  /* Glow Animations */
+  .glow-pulse-blue {
+    animation: glowPulseBlue 2s ease-in-out infinite alternate;
+  }
+  
+  .glow-pulse-teal {
+    animation: glowPulseTeal 2s ease-in-out infinite alternate;
+  }
+  
+  .glow-pulse-orange {
+    animation: glowPulseOrange 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes glowPulseBlue {
+  0% {
+    box-shadow: 0 0 5px rgba(31, 181, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(31, 181, 255, 0.6);
+  }
+}
+
+@keyframes glowPulseTeal {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 229, 168, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(0, 229, 168, 0.5);
+  }
+}
+
+@keyframes glowPulseOrange {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 122, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 122, 0, 0.4);
+  }
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-space);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-electric);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-teal);
+}
+
+/* Selection */
+::selection {
+  background: rgba(31, 181, 255, 0.3);
+  color: var(--color-heading);
+}
+
+/* Focus */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-electric/50 focus:ring-offset-2 focus:ring-offset-night;
+}
+
+/* Toast Animation */
+.animate-shrink {
+  animation: shrink 1s linear forwards;
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
