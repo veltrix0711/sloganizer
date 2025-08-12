@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, X, Rocket, User, LogOut, Heart, Settings, Building } from 'lucide-react'
 import { useAuth } from '../services/authContext'
+import ThemeToggle from './ThemeToggle'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -34,18 +35,18 @@ const Navbar = () => {
   )
 
   return (
-    <nav className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50 shadow-2xl shadow-slate-900/50">
+    <nav className="bg-night/95 backdrop-blur-sm border-b border-electric/10 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/25 group-hover:shadow-cyan-500/40 transition-all duration-300">
+              <div className="w-10 h-10 bg-grad-quantum rounded-xl flex items-center justify-center shadow-glow-orange group-hover:shadow-glow-orange-lg transition-all duration-300">
                 <Rocket className="h-5 w-5 text-white" />
               </div>
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
+              <div className="absolute -inset-0.5 bg-grad-heat rounded-xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="text-xl font-bold text-gradient-quantum">
               LaunchZone
             </span>
           </Link>
@@ -58,16 +59,16 @@ const Navbar = () => {
                 to={item.href}
                 className={`text-sm font-medium transition-all duration-300 relative group ${
                   isActivePath(item.href)
-                    ? 'text-cyan-400'
-                    : 'text-slate-300 hover:text-cyan-400'
+                    ? 'text-electric'
+                    : 'text-body hover:text-electric'
                 }`}
               >
                 {item.name}
                 {isActivePath(item.href) && (
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full"></div>
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-grad-surge rounded-full"></div>
                 )}
                 {!isActivePath(item.href) && (
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-grad-surge rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                 )}
               </Link>
             ))}
@@ -75,6 +76,7 @@ const Navbar = () => {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             {user ? (
               <div className="relative">
                 <button

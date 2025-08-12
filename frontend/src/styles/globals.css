@@ -4,27 +4,48 @@
 
 :root {
   /* LaunchZone Brand Colors */
-  --color-night: #0B1220;
-  --color-space: #0F1B2E;
   --color-electric: #1FB5FF;
   --color-orange: #FF7A00;
   --color-teal: #00E5A8;
   --color-lime: #69FFB1;
   
-  /* Text Colors */
-  --color-heading: #EAF2FF;
-  --color-body: #B9C7D9;
-  --color-muted: #7F8CA0;
-  
-  /* Glow Colors */
-  --glow-blue: rgba(31, 181, 255, 0.45);
-  --glow-teal: rgba(0, 229, 168, 0.40);
-  --glow-orange: rgba(255, 122, 0, 0.35);
-  
   /* Gradients */
   --grad-heat: linear-gradient(135deg, #FF7A00 0%, #1FB5FF 100%);
   --grad-quantum: linear-gradient(135deg, #FF7A00 0%, #00E5A8 50%, #1FB5FF 100%);
   --grad-surge: linear-gradient(135deg, #00E5A8 0%, #1FB5FF 100%);
+}
+
+/* Dark Theme */
+:root,
+.dark {
+  --color-night: #0B1220;
+  --color-space: #0F1B2E;
+  
+  /* Dark Text Colors */
+  --color-heading: #EAF2FF;
+  --color-body: #B9C7D9;
+  --color-muted: #7F8CA0;
+  
+  /* Dark Glow Colors */
+  --glow-blue: rgba(31, 181, 255, 0.45);
+  --glow-teal: rgba(0, 229, 168, 0.40);
+  --glow-orange: rgba(255, 122, 0, 0.35);
+}
+
+/* Light Theme */
+.light {
+  --color-night: #FFFFFF;
+  --color-space: #F8FAFC;
+  
+  /* Light Text Colors */
+  --color-heading: #1E293B;
+  --color-body: #475569;
+  --color-muted: #64748B;
+  
+  /* Light Glow Colors */
+  --glow-blue: rgba(31, 181, 255, 0.15);
+  --glow-teal: rgba(0, 229, 168, 0.15);
+  --glow-orange: rgba(255, 122, 0, 0.15);
 }
 
 /* Base Styles */

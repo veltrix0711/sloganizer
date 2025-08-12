@@ -34,8 +34,8 @@ const NewPricingPage = () => {
   const fetchCurrentSubscription = async () => {
     try {
       const response = await api.get('/billing/subscription')
-      if (response.data.success && response.data.subscription) {
-        setCurrentPlan(response.data.subscription.plan_code)
+      if (response.success && response.subscription) {
+        setCurrentPlan(response.subscription.plan_code)
       }
     } catch (error) {
       console.error('Error fetching subscription:', error)
@@ -62,8 +62,8 @@ const NewPricingPage = () => {
         cancelUrl: window.location.origin + '/pricing'
       })
 
-      if (response.data.success && response.data.url) {
-        window.location.href = response.data.url
+      if (response.success && response.url) {
+        window.location.href = response.url
       } else {
         throw new Error('Failed to create checkout session')
       }
@@ -244,7 +244,7 @@ const NewPricingPage = () => {
             <button
               onClick={() => handlePlanSelect(plans.starter.code)}
               disabled={loading === plans.starter.code}
-              className="btn-primary w-full group"
+              className="btn-primary w-full group text-lg py-4"
             >
               {loading === plans.starter.code ? (
                 <div className="flex items-center justify-center">
@@ -382,7 +382,7 @@ const NewPricingPage = () => {
             <button
               onClick={() => handlePlanSelect(selectedProTier)}
               disabled={loading === selectedProTier}
-              className="btn-accent w-full group"
+              className="btn-accent w-full group text-lg py-4"
             >
               {loading === selectedProTier ? (
                 <div className="flex items-center justify-center">
@@ -456,7 +456,7 @@ const NewPricingPage = () => {
             {/* CTA Button */}
             <Link
               to="/contact-sales"
-              className="btn-secondary w-full group flex items-center justify-center"
+              className="btn-secondary w-full group flex items-center justify-center text-lg py-4"
             >
               Contact Sales
               <Users className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform" />

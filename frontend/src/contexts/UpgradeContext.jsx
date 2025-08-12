@@ -34,23 +34,36 @@ export const UpgradeProvider = ({ children }) => {
   const fetchUsageData = async () => {
     try {
       const response = await api.get('/billing/usage')
-      if (response.data.success) {
-        setUsage(response.data.usage)
-        checkForWarnings(response.data.usage)
+      if (response.success) {
+        setUsage(response.usage)
+        checkForWarnings(response.usage)
       }
     } catch (error) {
       console.error('Error fetching usage:', error)
+      // Set default usage data when billing routes are unavailable
+      setUsage({
+        credits_used: 0,
+        credits_limit: 100,
+        brands_used: 0,
+        brands_limit: 3
+      })
     }
   }
 
   const fetchSubscriptionData = async () => {
     try {
       const response = await api.get('/billing/subscription')
-      if (response.data.success) {
-        setSubscription(response.data.subscription)
+      if (response.success) {
+        setSubscription(response.subscription)
       }
     } catch (error) {
       console.error('Error fetching subscription:', error)
+      // Set default subscription data when billing routes are unavailable
+      setSubscription({
+        plan_code: 'STARTER',
+        status: 'trialing',
+        tier: 'starter'
+      })
     }
   }
 
