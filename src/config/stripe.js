@@ -11,17 +11,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 // Pricing configuration
 export const STRIPE_CONFIG = {
   prices: {
-    STARTER: process.env.STRIPE_PRICE_STARTER,
-    PRO_50: process.env.STRIPE_PRICE_PRO_50,
-    PRO_200: process.env.STRIPE_PRICE_PRO_200,
-    PRO_500: process.env.STRIPE_PRICE_PRO_500,
+    STARTER: 'price_1Rv6l6GdU41U3RDABW3PJgU3',
+    PRO_50: 'price_1Rv6sTGdU41U3RDAMU7CB5Vf',
+    PRO_200: 'price_1Rv6u0GdU41U3RDAqLI5XEde',
+    PRO_500: 'price_1Rv6uvGdU41U3RDAjMpsNLkm',
   },
   addons: {
-    CREDITS_500: process.env.STRIPE_ADDON_CREDITS_500,
-    VIDEO_60: process.env.STRIPE_ADDON_VIDEO_60,
-    POSTS_1000: process.env.STRIPE_ADDON_POSTS_1000,
-    BRAND: process.env.STRIPE_ADDON_BRAND,
-    SEAT: process.env.STRIPE_ADDON_SEAT,
+    CREDITS_500: 'price_1Rv6x6GdU41U3RDAuUTeAVvZ',
+    VIDEO_60: 'price_1Rv70PGdU41U3RDAHsnClUmo',
+    POSTS_1000: 'price_1Rv6ybGdU41U3RDAh3CxzEPf',
+    BRAND: 'price_1Rv72JGdU41U3RDAPYwGN6S7',
+    SEAT: 'price_1Rv73pGdU41U3RDAVuTAjcWO',
   },
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
 }

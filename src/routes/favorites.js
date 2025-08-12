@@ -16,7 +16,12 @@ router.get('/', authMiddleware, async (req, res) => {
       .select(`
         id,
         created_at,
-        slogans (*)
+        slogan_text,
+        company_name,
+        industry,
+        brand_personality,
+        keywords,
+        tone
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })

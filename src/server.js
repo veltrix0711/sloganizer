@@ -14,17 +14,17 @@ import nameGeneratorRoutes from './routes/nameGenerator.js';
 import logoGeneratorRoutes from './routes/logoGenerator.js';
 import socialPostsRoutes from './routes/socialPosts.js';
 import brandExportRoutes from './routes/brandExport.js';
-// LaunchZone routes - temporarily commented out for deployment stability
-// import billingRoutes from './routes/billing.js';
-// import salesRoutes from './routes/sales.js';
-// import emailRoutes from './routes/emails.js';
-// import webhookRoutes from './routes/webhooks.js';
+// LaunchZone routes - now re-enabled with Stripe price IDs
+import billingRoutes from './routes/billing.js';
+import salesRoutes from './routes/sales.js';
+import emailRoutes from './routes/emails.js';
+import webhookRoutes from './routes/webhooks.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 
-// Jobs and Services - temporarily disabled
-// let lifecycleEmailJob;
+// Jobs and Services - now re-enabled
+import lifecycleEmailJob from './jobs/lifecycleEmails.js';
 
 dotenv.config();
 
@@ -39,6 +39,8 @@ app.use(helmet());
 app.use(cors({
   origin: [
     'https://sloganizer-frontend-production.up.railway.app',
+    'https://www.launchzone.space',
+    'https://launchzone.space',
     'http://localhost:5173',
     process.env.FRONTEND_URL,
     'null' // Allow file:// origins for local debugging
@@ -59,7 +61,7 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Webhooks route (must be before JSON parsing for Stripe raw body)
-// app.use('/api/webhooks', webhookRoutes); // Temporarily disabled
+app.use('/api/webhooks', webhookRoutes);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -174,50 +176,92 @@ app.get('/api/debug/stripe-test', async (req, res) => {
       telemetry: false
     });
     
-    const proPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
-    const agencyPriceId = process.env.STRIPE_AGENCY_MONTHLY_PRICE_ID;
+    const starterPriceId = 'price_1Rv6l6GdU41U3RDABW3PJgU3';
+    const pro50PriceId = 'price_1Rv6sTGdU41U3RDAMU7CB5Vf';
+    const pro200PriceId = 'price_1Rv6u0GdU41U3RDAqLI5XEde';
+    const pro500PriceId = 'price_1Rv6uvGdU41U3RDAjMpsNLkm';
     
     const results = {
       config: {
-        proPriceId,
-        agencyPriceId,
+        starterPriceId,
+        pro50PriceId,
+        pro200PriceId,
+        pro500PriceId,
         hasStripeKey: !!process.env.STRIPE_SECRET_KEY
       }
     };
     
-    // Test Pro price
+    // Test Starter price
     try {
-      const proPrice = await stripe.prices.retrieve(proPriceId);
-      results.pro = {
+      const starterPrice = await stripe.prices.retrieve(starterPriceId);
+      results.starter = {
         valid: true,
-        priceId: proPrice.id,
-        amount: proPrice.unit_amount,
-        currency: proPrice.currency,
-        interval: proPrice.recurring?.interval
+        priceId: starterPrice.id,
+        amount: starterPrice.unit_amount,
+        currency: starterPrice.currency,
+        interval: starterPrice.recurring?.interval
       };
     } catch (error) {
-      results.pro = {
+      results.starter = {
         valid: false,
-        priceId: proPriceId,
+        priceId: starterPriceId,
         error: error.message,
         type: error.type
       };
     }
     
-    // Test Agency price
+    // Test Pro-50 price
     try {
-      const agencyPrice = await stripe.prices.retrieve(agencyPriceId);
-      results.agency = {
+      const pro50Price = await stripe.prices.retrieve(pro50PriceId);
+      results.pro50 = {
         valid: true,
-        priceId: agencyPrice.id,
-        amount: agencyPrice.unit_amount,
-        currency: agencyPrice.currency,
-        interval: agencyPrice.recurring?.interval
+        priceId: pro50Price.id,
+        amount: pro50Price.unit_amount,
+        currency: pro50Price.currency,
+        interval: pro50Price.recurring?.interval
       };
     } catch (error) {
-      results.agency = {
+      results.pro50 = {
         valid: false,
-        priceId: agencyPriceId,
+        priceId: pro50PriceId,
+        error: error.message,
+        type: error.type
+      };
+    }
+    
+    // Test Pro-200 price
+    try {
+      const pro200Price = await stripe.prices.retrieve(pro200PriceId);
+      results.pro200 = {
+        valid: true,
+        priceId: pro200Price.id,
+        amount: pro200Price.unit_amount,
+        currency: pro200Price.currency,
+        interval: pro200Price.recurring?.interval
+      };
+    } catch (error) {
+      results.pro200 = {
+        valid: false,
+        priceId: pro200PriceId,
+        error: error.message,
+        type: error.type
+      };
+    }
+    
+    // Test Pro-500 price
+    try {
+      const pro500Price = await stripe.prices.retrieve(pro500PriceId);
+      results.pro500 = {
+        valid: true,
+        priceId: pro500Price.id,
+        amount: pro500Price.unit_amount,
+        currency: pro500Price.currency,
+        interval: pro500Price.recurring?.interval
+      };
+    } catch (error) {
+      results.pro500 = {
+        valid: false,
+        priceId: pro500PriceId,
         error: error.message,
         type: error.type
       };
@@ -257,10 +301,10 @@ app.use('/api/payments', (req, res, next) => {
   return authMiddleware(req, res, next);
 }, paymentRoutes);
 
-// New LaunchZone billing and lifecycle routes - temporarily disabled
-// app.use('/api/billing', billingRoutes);
-// app.use('/api/sales', salesRoutes);
-// app.use('/api/emails', emailRoutes);
+// New LaunchZone billing and lifecycle routes - now enabled
+app.use('/api/billing', billingRoutes);
+app.use('/api/sales', salesRoutes);
+app.use('/api/emails', emailRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -280,6 +324,6 @@ app.listen(PORT, () => {
   console.log(`   ✓ /api/social/* - Social Posts`);
   console.log(`   ✓ /api/exports/* - Brand Exports`);
   console.log(`🔐 All Brand Suite routes require authentication`);
-  console.log(`⚠️  LaunchZone billing features temporarily disabled for deployment stability`);
+  console.log(`✅ LaunchZone billing system enabled with Stripe integration`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
