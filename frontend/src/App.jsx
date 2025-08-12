@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { useAuth } from './services/authContext'
 import { UpgradeProvider } from './contexts/UpgradeContext'
-import { ThemeProvider } from './contexts/ThemeContext'
 import { Loader2 } from 'lucide-react'
 
 // Pages
@@ -21,7 +20,7 @@ import BrandSuitePage from './pages/BrandSuitePage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Components
-import Navbar from './components/NavBar'
+import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import PrivateRoute from './components/PrivateRoute'
 
@@ -42,10 +41,9 @@ function App() {
   }
 
   return (
-    <ThemeProvider>
-      <UpgradeProvider>
-        <div className="min-h-screen bg-night flex flex-col">
-          <Navbar />
+    <UpgradeProvider>
+      <div className="min-h-screen bg-night flex flex-col">
+        <Navbar />
         
         <main className="flex-1">
           <Routes>
@@ -89,8 +87,7 @@ function App() {
         
         <Footer />
       </div>
-      </UpgradeProvider>
-    </ThemeProvider>
+    </UpgradeProvider>
   )
 }
 

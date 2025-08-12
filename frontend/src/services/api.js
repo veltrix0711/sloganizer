@@ -27,15 +27,28 @@ class ApiService {
           headers,
           ...options
         })
-        const data = await response.json()
         if (!response.ok) {
-          // If backend returns validation details, include them in the error
-          const errorMsg = data.error || `HTTP ${response.status}`
-          const details = data.details || null
-          const errorObj = new Error(errorMsg)
-          if (details) errorObj.details = details
-          throw errorObj
+          // Handle non-JSON error responses (like 429 rate limits)
+          const contentType = response.headers.get('content-type')
+          let errorMessage = `HTTP ${response.status}`
+          
+          if (contentType && contentType.includes('application/json')) {
+            try {
+              const data = await response.json()
+              errorMessage = data.error || data.message || errorMessage
+            } catch (parseError) {
+              // If JSON parsing fails, use status text
+              errorMessage = response.statusText || errorMessage
+            }
+          } else {
+            // Non-JSON response, use status text
+            errorMessage = response.statusText || errorMessage
+          }
+          
+          throw new Error(errorMessage)
         }
+        
+        const data = await response.json()
         return data
       } catch (error) {
         console.error(`API request failed: ${endpoint}`, error)

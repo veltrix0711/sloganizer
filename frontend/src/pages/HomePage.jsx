@@ -83,13 +83,12 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-night pt-16 pb-32 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-16 pb-32 overflow-hidden">
         {/* Animated background elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange/8 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-electric/6 rounded-full blur-3xl animate-float delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-electric/8 rounded-full blur-3xl animate-float delay-2000"></div>
-          <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-orange/5 rounded-full blur-3xl animate-float delay-3000"></div>
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,23 +96,23 @@ const HomePage = () => {
             {/* Logo/Brand Mark */}
             <div className="flex justify-center mb-8">
               <div className="relative">
-                <div className="w-20 h-20 bg-grad-quantum rounded-xl flex items-center justify-center shadow-glow-orange">
+                <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center shadow-2xl shadow-cyan-500/25">
                   <Rocket className="h-10 w-10 text-white" />
                 </div>
-                <div className="absolute -inset-1 bg-grad-heat rounded-xl blur opacity-50 animate-glow"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl blur opacity-75 animate-pulse"></div>
               </div>
             </div>
 
             <h1 className="text-5xl md:text-7xl font-bold mb-8">
-              <span className="text-gradient-quantum leading-tight block">
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent leading-tight block">
                 LAUNCHZONE
               </span>
-              <span className="text-2xl md:text-3xl text-heading font-light block mt-4">
+              <span className="text-2xl md:text-3xl text-white font-light block mt-4">
                 Build your brand. Launch from here.
               </span>
             </h1>
 
-            <p className="text-xl text-body mb-12 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed">
               The complete AI-powered brand creation platform. From business names and logos to 
               social content and brand guidelines - everything you need to launch professionally.
             </p>
@@ -121,29 +120,30 @@ const HomePage = () => {
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <Link
                 to="/brand-suite"
-                className="btn-primary text-lg px-10 py-5 group"
+                className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg font-semibold text-white shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 hover:scale-105"
               >
-                <span className="flex items-center justify-center">
+                <span className="relative z-10 flex items-center justify-center">
                   Start Building Your Brand
-                  <Rocket className="h-6 w-6 ml-3 group-hover:translate-x-1 transition-transform" />
+                  <Rocket className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-purple-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
               
               <Link
                 to="/pricing"
-                className="btn-secondary text-lg px-10 py-5"
+                className="px-8 py-4 bg-slate-800/50 border border-slate-600 rounded-lg font-semibold text-white hover:bg-slate-700/50 hover:border-slate-500 transition-all duration-300 backdrop-blur-sm"
               >
                 View Pricing
               </Link>
             </div>
 
-            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-muted">
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-slate-400">
               <div className="flex items-center">
-                <CheckCircle className="h-4 w-4 text-teal mr-2" />
+                <CheckCircle className="h-4 w-4 text-cyan-400 mr-2" />
                 Complete Brand Suite
               </div>
               <div className="flex items-center">
-                <CheckCircle className="h-4 w-4 text-teal mr-2" />
+                <CheckCircle className="h-4 w-4 text-cyan-400 mr-2" />
                 No credit card required
               </div>
               <div className="flex items-center">

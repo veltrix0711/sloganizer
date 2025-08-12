@@ -84,6 +84,7 @@ const LogoGenerator = () => {
   };
 
   const handleGenerate = async (formData) => {
+    console.log('🎨 Logo generation started with data:', formData);
     try {
       setGenerating(true);
       
@@ -91,6 +92,8 @@ const LogoGenerator = () => {
         ...formData,
         brandProfileId: selectedProfile?.id
       };
+      
+      console.log('🚀 Making API request to /api/logos/generate with payload:', payload);
 
       const data = await apiRequest('/api/logos/generate', {
         method: 'POST',
@@ -106,7 +109,8 @@ const LogoGenerator = () => {
       }
 
     } catch (error) {
-      console.error('Logo generation error:', error);
+      console.error('❌ Logo generation error:', error);
+      console.error('Error details:', error.message, error.stack);
       toast.error(error.message || 'Failed to generate logos');
     } finally {
       setGenerating(false);
