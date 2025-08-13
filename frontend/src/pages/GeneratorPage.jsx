@@ -5,6 +5,10 @@ import { useAuth } from '../services/authContext'
 import { INDUSTRIES, BRAND_PERSONALITIES, formatPersonality, formatIndustry } from '../services/supabase'
 import api from '../services/api'
 import toast from 'react-hot-toast'
+import NameGeneratorWidget from '../components/Widgets/NameGeneratorWidget'
+import LogoGeneratorWidget from '../components/Widgets/LogoGeneratorWidget'
+import ActivationChecklist from '../components/Widgets/ActivationChecklist'
+import SocialPostTemplates from '../components/Widgets/SocialPostTemplates'
 
 const GeneratorPage = () => {
   const { user } = useAuth()
@@ -26,6 +30,9 @@ const GeneratorPage = () => {
   const [selectedBrandProfile, setSelectedBrandProfile] = useState(null)
   const [useVoiceTraining, setUseVoiceTraining] = useState(false)
   const [voiceStatus, setVoiceStatus] = useState(null)
+  
+  // Activation checklist state
+  const [showChecklist, setShowChecklist] = useState(true)
 
   // Load brand profiles when user is available
   useEffect(() => {
@@ -194,6 +201,11 @@ const GeneratorPage = () => {
         console.log('Slogans from response:', response.slogans)
         setGeneratedSlogans(response.slogans || [])
         setRemainingFreeGenerations(response.remaining)
+        
+        // Mark checklist action as completed
+        if (window.markChecklistAction) {
+          window.markChecklistAction('hasGeneratedSlogan')
+        }
       }
     } catch (error) {
       console.error('Generation error:', error)
@@ -654,7 +666,42 @@ const GeneratorPage = () => {
             )}
           </div>
         </div>
+
+        {/* Additional Tools Widgets */}
+        <div className="mt-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-white mb-2">
+              More <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Creative Tools</span>
+            </h2>
+            <p className="text-slate-300">
+              Explore our additional generators to build your complete brand identity
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <NameGeneratorWidget user={user} />
+            <LogoGeneratorWidget user={user} businessName={formData.businessName} />
+          </div>
+
+          {/* Professional Social Post Templates */}
+          <div className="mt-8 max-w-4xl mx-auto">
+            <SocialPostTemplates 
+              user={user} 
+              businessName={formData.businessName}
+              industry={formData.industry}
+              brandProfile={selectedBrandProfile}
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Activation Checklist */}
+      {user && showChecklist && (
+        <ActivationChecklist 
+          user={user} 
+          onDismiss={() => setShowChecklist(false)}
+        />
+      )}
     </div>
   )
 }
