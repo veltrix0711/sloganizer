@@ -14,11 +14,13 @@ import {
   ExternalLink,
   Brain,
   Sparkles,
-  BarChart3
+  BarChart3,
+  MessageSquare
 } from 'lucide-react';
 import BrandDashboard from '../BrandAnalysis/BrandDashboard';
 import AnalysisResults from '../BrandAnalysis/AnalysisResults';
 import ContentSuggestions from '../BrandAnalysis/ContentSuggestions';
+import VoiceTrainingTab from '../VoiceTraining/VoiceTrainingTab';
 
 const BrandProfileCard = ({ profile, onEdit }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -132,6 +134,7 @@ const BrandProfileCard = ({ profile, onEdit }) => {
           {[
             { id: 'overview', name: 'Overview', icon: Building },
             { id: 'dashboard', name: 'AI Dashboard', icon: Brain },
+            { id: 'voice', name: 'Voice Training', icon: MessageSquare },
             { id: 'analysis', name: 'Analysis', icon: BarChart3 },
             { id: 'content', name: 'Content Ideas', icon: Sparkles }
           ].map((tab) => {
@@ -404,6 +407,15 @@ const BrandProfileCard = ({ profile, onEdit }) => {
             brandProfile={profile}
             onAnalyze={(results) => setAnalysisResults(results)}
             onGenerateContent={(type) => setActiveTab('content')}
+          />
+        )}
+
+        {activeTab === 'voice' && (
+          <VoiceTrainingTab 
+            brandProfile={profile}
+            onUpdate={() => {
+              // Could add callback to refresh profile data if needed
+            }}
           />
         )}
 

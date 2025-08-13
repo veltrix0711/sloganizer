@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Wand2, Copy, Heart, Download, RefreshCw, AlertCircle, CheckCircle, Loader2, Sparkles, Rocket, Zap } from 'lucide-react'
+import { Wand2, Copy, Heart, Download, RefreshCw, AlertCircle, CheckCircle, Loader2, Sparkles, Rocket, Zap, Brain, MessageSquare } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 import { INDUSTRIES, BRAND_PERSONALITIES, formatPersonality, formatIndustry } from '../services/supabase'
 import api from '../services/api'
@@ -20,6 +20,68 @@ const GeneratorPage = () => {
   const [generatedSlogans, setGeneratedSlogans] = useState([])
   const [remainingFreeGenerations, setRemainingFreeGenerations] = useState(null)
   const [error, setError] = useState('')
+  
+  // Brand profile and voice training state
+  const [brandProfiles, setBrandProfiles] = useState([])
+  const [selectedBrandProfile, setSelectedBrandProfile] = useState(null)
+  const [useVoiceTraining, setUseVoiceTraining] = useState(false)
+  const [voiceStatus, setVoiceStatus] = useState(null)
+
+  // Load brand profiles when user is available
+  useEffect(() => {
+    if (user) {
+      loadBrandProfiles()
+    }
+  }, [user])
+
+  // Check voice status when brand profile is selected
+  useEffect(() => {
+    if (selectedBrandProfile && useVoiceTraining) {
+      checkVoiceStatus()
+    }
+  }, [selectedBrandProfile, useVoiceTraining])
+
+  const loadBrandProfiles = async () => {
+    try {
+      const response = await fetch('/api/brand/profiles', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setBrandProfiles(data.profiles || [])
+        
+        // Auto-select default profile if available
+        const defaultProfile = data.profiles?.find(p => p.is_default)
+        if (defaultProfile) {
+          setSelectedBrandProfile(defaultProfile)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading brand profiles:', error)
+    }
+  }
+
+  const checkVoiceStatus = async () => {
+    if (!selectedBrandProfile?.id) return
+
+    try {
+      const response = await fetch(`/api/voice-training/profiles/${selectedBrandProfile.id}/status`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setVoiceStatus(data)
+      }
+    } catch (error) {
+      console.error('Error checking voice status:', error)
+    }
+  }
 
   // Handle form input changes
   const handleInputChange = (field, value) => {
@@ -71,13 +133,61 @@ const GeneratorPage = () => {
     setError('')
 
     try {
-      const response = await api.generateSlogan({
-        companyName: formData.businessName.trim(),
-        industry: formData.industry,
-        brandPersonality: formData.personality,
-        keywords: formData.keywords,
-        tone: 'casual' // default tone since the form doesn't have this field yet
-      })
+      let response;
+      
+      // Use voice-aware generation if enabled and voice profile is ready
+      if (useVoiceTraining && selectedBrandProfile && voiceStatus?.progress?.ready_for_generation) {
+        const voicePrompt = `Generate creative slogans for ${formData.businessName.trim()}, a ${formatIndustry(formData.industry)} business with a ${formatPersonality(formData.personality)} personality. ${formData.keywords.length > 0 ? `Include these keywords: ${formData.keywords.join(', ')}.` : ''} ${formData.targetAudience ? `Target audience: ${formData.targetAudience}.` : ''}`
+        
+        const voiceResponse = await fetch('/api/voice-training/generate-content', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            brandProfileId: selectedBrandProfile.id,
+            prompt: voicePrompt,
+            contentType: 'marketing'
+          })
+        })
+        
+        if (voiceResponse.ok) {
+          const voiceResult = await voiceResponse.json()
+          // Parse slogans from the generated content
+          const slogans = voiceResult.content
+            .split('\n')
+            .filter(line => line.trim())
+            .map(line => line.replace(/^[\d\-\.\*\s]+/, '').trim())
+            .filter(slogan => slogan.length > 0 && slogan.length < 100)
+            .slice(0, 10)
+          
+          response = {
+            success: true,
+            slogans: slogans.map(slogan => ({ text: slogan, voiceMatch: true })),
+            voiceMatchScore: voiceResult.voiceMatchScore,
+            usedVoiceProfile: voiceResult.usedVoiceProfile
+          }
+        } else {
+          // Fallback to regular generation
+          response = await api.generateSlogan({
+            companyName: formData.businessName.trim(),
+            industry: formData.industry,
+            brandPersonality: formData.personality,
+            keywords: formData.keywords,
+            tone: 'casual'
+          })
+        }
+      } else {
+        // Regular slogan generation
+        response = await api.generateSlogan({
+          companyName: formData.businessName.trim(),
+          industry: formData.industry,
+          brandPersonality: formData.personality,
+          keywords: formData.keywords,
+          tone: 'casual'
+        })
+      }
 
       if (response.success) {
         console.log('Frontend received response:', response)
@@ -266,6 +376,89 @@ const GeneratorPage = () => {
                 </p>
               </div>
 
+              {/* Brand Profile Selection (for authenticated users) */}
+              {user && brandProfiles.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-sm font-bold text-white mb-3">
+                    <Brain className="inline w-4 h-4 mr-2" />
+                    Brand Profile (Optional)
+                  </label>
+                  <select
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-200"
+                    value={selectedBrandProfile?.id || ''}
+                    onChange={(e) => {
+                      const profile = brandProfiles.find(p => p.id === e.target.value)
+                      setSelectedBrandProfile(profile || null)
+                    }}
+                  >
+                    <option value="">Select a brand profile...</option>
+                    {brandProfiles.map(profile => (
+                      <option key={profile.id} value={profile.id}>
+                        {profile.name} {profile.is_default ? '(Default)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-slate-400 mt-2">
+                    Use your brand profile to generate more targeted slogans
+                  </p>
+                </div>
+              )}
+
+              {/* Voice Training Toggle */}
+              {user && selectedBrandProfile && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600 rounded-lg">
+                    <div className="flex items-center">
+                      <MessageSquare className="w-5 h-5 text-cyan-400 mr-3" />
+                      <div>
+                        <span className="text-sm font-medium text-white">Voice-Aware Generation</span>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Generate slogans that match your brand's unique voice and tone
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {voiceStatus?.progress?.ready_for_generation ? (
+                        <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full border border-green-500/30">
+                          Ready
+                        </span>
+                      ) : voiceStatus?.progress?.analyzed_samples >= 3 ? (
+                        <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full border border-yellow-500/30">
+                          Training
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-gray-500/20 text-gray-300 px-2 py-1 rounded-full border border-gray-500/30">
+                          No Profile
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setUseVoiceTraining(!useVoiceTraining)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-800 ${
+                          useVoiceTraining ? 'bg-cyan-600' : 'bg-slate-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            useVoiceTraining ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  {useVoiceTraining && !voiceStatus?.progress?.ready_for_generation && (
+                    <div className="mt-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                      <p className="text-xs text-yellow-300">
+                        {voiceStatus?.progress?.analyzed_samples < 5 
+                          ? `Upload ${5 - (voiceStatus?.progress?.analyzed_samples || 0)} more content samples in Brand Suite to enable voice-aware generation.`
+                          : 'Voice profile is still training. Slogans will use standard generation with brand context.'
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Keywords */}
               <div className="mb-8">
                 <label className="block text-sm font-bold text-white mb-3">
@@ -370,42 +563,57 @@ const GeneratorPage = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {generatedSlogans.map((slogan, index) => (
-                    <div 
-                      key={index} 
-                      className="p-6 border border-slate-600 rounded-xl hover:border-cyan-500/50 bg-slate-700/30 hover:bg-slate-700/50 transition-all duration-200 group"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-lg font-medium text-white flex-1">
-                          "{slogan}"
-                        </h3>
-                        <div className="flex space-x-2 ml-4">
-                          <button
-                            onClick={() => copySlogan(slogan)}
-                            className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-slate-600/50 rounded-lg transition-all duration-200"
-                            title="Copy to clipboard"
-                          >
-                            <Copy className="h-4 w-4" />
-                          </button>
-                          {user && (
+                  {generatedSlogans.map((slogan, index) => {
+                    const sloganText = typeof slogan === 'string' ? slogan : slogan.text;
+                    const isVoiceMatch = typeof slogan === 'object' && slogan.voiceMatch;
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className="p-6 border border-slate-600 rounded-xl hover:border-cyan-500/50 bg-slate-700/30 hover:bg-slate-700/50 transition-all duration-200 group"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="text-lg font-medium text-white">
+                                "{sloganText}"
+                              </h3>
+                              {isVoiceMatch && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                  <MessageSquare className="w-3 h-3 mr-1" />
+                                  Voice Match
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex space-x-2 ml-4">
                             <button
-                              onClick={() => saveSlogan(slogan)}
-                              className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
-                              title="Save to favorites"
+                              onClick={() => copySlogan(sloganText)}
+                              className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-slate-600/50 rounded-lg transition-all duration-200"
+                              title="Copy to clipboard"
                             >
-                              <Heart className="h-4 w-4" />
+                              <Copy className="h-4 w-4" />
                             </button>
-                          )}
+                            {user && (
+                              <button
+                                onClick={() => saveSlogan(sloganText)}
+                                className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+                                title="Save to favorites"
+                              >
+                                <Heart className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
                         </div>
+                        
+                        {(typeof slogan === 'object' && slogan.explanation) && (
+                          <p className="text-sm text-slate-300 bg-slate-600/30 p-3 rounded-lg">
+                            <strong className="text-cyan-400">Why this works:</strong> {slogan.explanation}
+                          </p>
+                        )}
                       </div>
-                      
-                      {slogan.explanation && (
-                        <p className="text-sm text-slate-300 bg-slate-600/30 p-3 rounded-lg">
-                          <strong className="text-cyan-400">Why this works:</strong> {slogan.explanation}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {!user && (
