@@ -90,6 +90,20 @@ railway up  # Deploy
 3. **Environment Variables**: Set before deployment, not after
 4. **Build Context**: Railway uses entire project context, not just subdirectories
 5. **Caching Issues**: Sometimes requires multiple deploys to clear cache
+6. **CRITICAL: Buildpack Detection**: Deploy from subdirectories, not root!
+
+### BUILDPACK DETECTION ERROR SOLUTION:
+**Error**: "Railpack could not determine how to build the app"
+**Root Cause**: Deploying from root directory with multiple services
+**Solution**: Always deploy from the specific service directory
+```bash
+# WRONG - deploys from root
+railway up --service backend
+
+# CORRECT - deploys from subdirectory  
+cd backend && railway up --service sloganixerbackend
+cd frontend && railway up --service sloganizer-frontend
+```
 
 ### DEBUGGING COMMANDS:
 
