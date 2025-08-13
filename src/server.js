@@ -87,6 +87,31 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is running!' });
 });
 
+// Favorites stats route (placeholder)
+app.get('/api/favorites/stats/summary', async (req, res) => {
+  try {
+    // Return placeholder stats
+    res.json({
+      success: true,
+      stats: {
+        total_favorites: 0,
+        categories: {
+          slogans: 0,
+          logos: 0,
+          social_posts: 0
+        },
+        recent_activity: []
+      }
+    });
+  } catch (error) {
+    console.error('Error getting favorites stats:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);

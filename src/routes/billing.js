@@ -30,13 +30,49 @@ const authMiddleware = async (req, res, next) => {
 // Get subscription status
 router.get('/subscription', authMiddleware, async (req, res) => {
   try {
-    // For now, return free plan status
+    // Get user profile from Supabase
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      // Return default if profile not found
+      return res.json({
+        success: true,
+        subscription: {
+          status: 'active',
+          plan: 'starter',
+          planName: 'Starter',
+          currentPeriodStart: new Date().toISOString(),
+          currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
+          trialEnd: null
+        }
+      });
+    }
+
+    // Map subscription tier to plan info
+    const tierMapping = {
+      'free': { plan: 'starter', planName: 'Starter' },
+      'pro': { plan: 'professional', planName: 'Professional' },
+      'pro_500': { plan: 'professional', planName: 'Professional' },
+      'pro-500': { plan: 'professional', planName: 'Professional' },
+      'agency': { plan: 'enterprise', planName: 'Enterprise' },
+      'premium': { plan: 'enterprise', planName: 'Enterprise' }
+    };
+
+    const tierInfo = tierMapping[profile.subscription_tier] || { plan: 'starter', planName: 'Starter' };
+
     res.json({
       success: true,
       subscription: {
-        status: 'active',
-        plan: 'starter',
-        planName: 'Starter',
+        status: profile.subscription_status || 'active',
+        plan: tierInfo.plan,
+        planName: tierInfo.planName,
+        tier: profile.subscription_tier,
         currentPeriodStart: new Date().toISOString(),
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
