@@ -106,9 +106,16 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (userId) => {
     try {
+      // Skip fetch if no userId
+      if (!userId) {
+        console.log('AuthContext: No userId provided, skipping profile fetch')
+        return null
+      }
+
       // Return cached profile if available
       if (profileCache.current[userId]) {
         console.log('AuthContext: Using cached profile for:', userId)
+        setProfile(profileCache.current[userId])
         return profileCache.current[userId]
       }
 
@@ -121,50 +128,60 @@ export const AuthProvider = ({ children }) => {
       fetchingProfiles.current.add(userId)
       console.log('AuthContext: Fetching user profile for:', userId)
       
-      // Add timeout to profile query to prevent hanging
-      const profilePromise = supabase
-        .from(TABLES.USER_PROFILES)
-        .select('*')
-        .eq('id', userId)
-        .single()
+      // Create AbortController for better timeout handling
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 8000) // 8 second timeout
+      
+      try {
+        const { data, error } = await supabase
+          .from(TABLES.USER_PROFILES)
+          .select('*')
+          .eq('id', userId)
+          .single()
+          .abortSignal(controller.signal)
 
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile query timeout')), 5000)
-      )
+        clearTimeout(timeoutId)
 
-      const { data, error } = await Promise.race([profilePromise, timeoutPromise])
-
-      if (error) {
-        fetchingProfiles.current.delete(userId)
-        console.error('Error fetching profile:', error)
-        if (error.code === 'PGRST116') {
-          console.log('AuthContext: No profile found (PGRST116), creating one...')
-          await createUserProfile(userId)
-          return
+        if (error) {
+          console.error('Error fetching profile:', error)
+          if (error.code === 'PGRST116') {
+            console.log('AuthContext: No profile found (PGRST116), creating one...')
+            await createUserProfile(userId)
+            return
+          }
+          
+          // For other errors, continue without profile to prevent infinite loading
+          console.warn('AuthContext: Continuing without profile due to error:', error)
+          setProfile(null)
+          return null
         }
-        
-        // For other errors, continue without profile to prevent infinite loading
-        console.warn('AuthContext: Continuing without profile due to error:', error)
-        return
-      }
 
-      if (data) {
-        console.log('AuthContext: Profile found:', data)
-        profileCache.current[userId] = data
-        setProfile(data)
-      } else {
-        console.log('AuthContext: No profile data, creating one...')
-        await createUserProfile(userId)
+        if (data) {
+          console.log('AuthContext: Profile found:', data)
+          profileCache.current[userId] = data
+          setProfile(data)
+          return data
+        } else {
+          console.log('AuthContext: No profile data, creating one...')
+          await createUserProfile(userId)
+          return null
+        }
+      } catch (abortError) {
+        clearTimeout(timeoutId)
+        if (abortError.name === 'AbortError') {
+          console.warn('AuthContext: Profile query was aborted (timeout)')
+          setProfile(null)
+        } else {
+          throw abortError
+        }
       }
       
-      fetchingProfiles.current.delete(userId)
     } catch (error) {
-      fetchingProfiles.current.delete(userId)
       console.error('Error fetching user profile:', error)
-      if (error.message === 'Profile query timeout') {
-        console.warn('AuthContext: Profile query timed out, continuing without profile')
-      }
-      // Continue without profile rather than hanging
+      setProfile(null)
+      // Don't crash the app, just continue without profile
+    } finally {
+      fetchingProfiles.current.delete(userId)
     }
   }
 

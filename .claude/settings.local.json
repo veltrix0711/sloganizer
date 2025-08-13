@@ -18,7 +18,8 @@
       "Bash(npm run build:*)",
       "WebFetch(domain:sloganixerbackend-production.up.railway.app)",
       "Bash(start debug-test.html)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }
