@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import socialMediaRoutes from './routes/socialMedia.js';
+import paymentsRoutes from './routes/payments.js';
+import billingRoutes from './routes/billing.js';
 import { supabase } from './services/supabase.js';
 
 dotenv.config();
@@ -73,6 +75,12 @@ app.get('/health', (req, res) => {
 
 // Social Media routes (auth is handled inside the routes)
 app.use('/api/social-media', socialMediaRoutes);
+
+// Payments routes
+app.use('/api/payments', paymentsRoutes);
+
+// Billing routes
+app.use('/api/billing', billingRoutes);
 
 // Test route
 app.get('/api/test', (req, res) => {
