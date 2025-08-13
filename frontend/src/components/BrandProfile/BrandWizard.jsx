@@ -154,35 +154,25 @@ const BrandWizard = ({ profile, onSubmit, onCancel }) => {
 
     switch (stepId) {
       case 'basics':
+        // Only require brand name - everything else is optional
         if (!formData.name.trim()) {
           newErrors.name = 'Brand name is required';
         }
-        if (!formData.industry.trim()) {
-          newErrors.industry = 'Industry is required';
-        }
         break;
       case 'visual':
-        // Visual identity is optional but we can provide warnings
+        // All visual identity fields are optional
         break;
       case 'audience':
-        if (!formData.primary_demographics.age_range) {
-          newErrors.primary_demographics = 'Primary demographics are required';
-        }
+        // Target audience is optional - can be filled later
         break;
       case 'business':
-        if (!formData.business_model) {
-          newErrors.business_model = 'Business model is required';
-        }
+        // Business details are optional - defaults are provided
         break;
       case 'voice':
-        if (formData.brand_personality.length === 0) {
-          newErrors.brand_personality = 'Select at least one personality trait';
-        }
+        // Voice settings are optional - defaults are provided
         break;
       case 'marketing':
-        if (formData.marketing_channels.length === 0) {
-          newErrors.marketing_channels = 'Select at least one marketing channel';
-        }
+        // Marketing strategy is optional - can be developed later
         break;
     }
 
