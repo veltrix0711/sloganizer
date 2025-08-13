@@ -1,10 +1,37 @@
 import express from 'express';
 import SocialMediaService from '../services/socialMediaService.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { supabase } from '../services/supabase.js';
 
 const router = express.Router();
 
 const socialMediaService = new SocialMediaService();
+
+// Auth middleware - defined inline since we don't have a separate middleware file
+const authMiddleware = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Authorization token required' });
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+    // Verify the token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    // Attach user to request object
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+};
 
 // Get user's connected social accounts
 router.get('/accounts', authMiddleware, async (req, res) => {
