@@ -15,7 +15,7 @@ import {
   Building,
   ExternalLink 
 } from 'lucide-react';
-import BrandProfileForm from './BrandProfileForm';
+import BrandWizard from './BrandWizard';
 import BrandProfileCard from './BrandProfileCard';
 
 const BrandProfileManager = () => {
@@ -265,7 +265,7 @@ const BrandProfileManager = () => {
 
       {/* Profile Form Modal */}
       {showForm && (
-        <BrandProfileForm
+        <BrandWizard
           profile={editingProfile}
           onSubmit={handleFormSubmit}
           onCancel={() => {

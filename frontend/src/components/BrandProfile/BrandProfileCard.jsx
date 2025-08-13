@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Edit3, 
   Palette, 
@@ -11,10 +11,19 @@ import {
   Twitter,
   Facebook,
   Star,
-  ExternalLink
+  ExternalLink,
+  Brain,
+  Sparkles,
+  BarChart3
 } from 'lucide-react';
+import BrandDashboard from '../BrandAnalysis/BrandDashboard';
+import AnalysisResults from '../BrandAnalysis/AnalysisResults';
+import ContentSuggestions from '../BrandAnalysis/ContentSuggestions';
 
 const BrandProfileCard = ({ profile, onEdit }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [analysisResults, setAnalysisResults] = useState(null);
+  
   const {
     name,
     tagline,
@@ -32,7 +41,14 @@ const BrandProfileCard = ({ profile, onEdit }) => {
     website_url,
     social_links = {},
     is_default,
-    brand_assets = []
+    brand_assets = [],
+    // AI analysis fields
+    brand_health_score,
+    ai_recommendations,
+    strengths,
+    opportunities,
+    weaknesses,
+    threats
   } = profile;
 
   const primaryLogo = brand_assets?.find(asset => asset.asset_type === 'logo' && asset.is_primary);
@@ -110,7 +126,38 @@ const BrandProfileCard = ({ profile, onEdit }) => {
         </div>
       </div>
 
-      <div className="p-6 space-y-8">
+      {/* Navigation Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8 px-6" aria-label="Tabs">
+          {[
+            { id: 'overview', name: 'Overview', icon: Building },
+            { id: 'dashboard', name: 'AI Dashboard', icon: Brain },
+            { id: 'analysis', name: 'Analysis', icon: BarChart3 },
+            { id: 'content', name: 'Content Ideas', icon: Sparkles }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.name}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div className="p-6">
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
         {/* Brand Colors */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -348,6 +395,55 @@ const BrandProfileCard = ({ profile, onEdit }) => {
               </p>
             )}
           </div>
+        )}
+          </div>
+        )}
+
+        {activeTab === 'dashboard' && (
+          <BrandDashboard 
+            brandProfile={profile}
+            onAnalyze={(results) => setAnalysisResults(results)}
+            onGenerateContent={(type) => setActiveTab('content')}
+          />
+        )}
+
+        {activeTab === 'analysis' && (
+          <div>
+            {analysisResults || (brand_health_score && ai_recommendations) ? (
+              <AnalysisResults
+                analysis={{
+                  brand_health_summary: analysisResults?.analysis?.brand_health_summary || "Analysis completed",
+                  strengths: strengths || analysisResults?.analysis?.strengths || [],
+                  opportunities: opportunities || analysisResults?.analysis?.opportunities || [],
+                  weaknesses: weaknesses || analysisResults?.analysis?.weaknesses || [],
+                  threats: threats || analysisResults?.analysis?.threats || [],
+                  market_insights: analysisResults?.analysis?.market_insights || {}
+                }}
+                healthScore={brand_health_score || analysisResults?.healthScore || 0}
+                recommendations={ai_recommendations || analysisResults?.recommendations || []}
+                actionItems={analysisResults?.actionItems || []}
+              />
+            ) : (
+              <div className="text-center py-12">
+                <Brain className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Analysis Available</h3>
+                <p className="text-gray-600 mb-6">
+                  Run an AI analysis from the Dashboard tab to see detailed insights here.
+                </p>
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Brain className="w-4 h-4 mr-2" />
+                  Go to Dashboard
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'content' && (
+          <ContentSuggestions brandProfile={profile} />
         )}
       </div>
     </div>
