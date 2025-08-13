@@ -17,6 +17,7 @@ import SuccessPage from './pages/SuccessPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProfilePage from './pages/ProfilePage'
 import BrandSuitePage from './pages/BrandSuitePage'
+import SocialMediaPage from './pages/SocialMediaPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Components
@@ -77,6 +78,11 @@ function App() {
             <Route path="/brand-suite" element={
               <PrivateRoute>
                 <BrandSuitePage />
+              </PrivateRoute>
+            } />
+            <Route path="/social-media" element={
+              <PrivateRoute>
+                <SocialMediaPage />
               </PrivateRoute>
             } />
             

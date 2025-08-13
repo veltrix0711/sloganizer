@@ -9,6 +9,7 @@ import NameGeneratorWidget from '../components/Widgets/NameGeneratorWidget'
 import LogoGeneratorWidget from '../components/Widgets/LogoGeneratorWidget'
 import ActivationChecklist from '../components/Widgets/ActivationChecklist'
 import SocialPostTemplates from '../components/Widgets/SocialPostTemplates'
+import SocialMediaWidget from '../components/Widgets/SocialMediaWidget'
 import CompleteBrandGenerator from '../components/BusinessSuite/CompleteBrandGenerator'
 
 const GeneratorPage = () => {
@@ -708,9 +709,10 @@ const GeneratorPage = () => {
           </div>
 
           {/* Quick Tools Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
             <NameGeneratorWidget user={user} />
             <LogoGeneratorWidget user={user} businessName={formData.businessName} />
+            <SocialMediaWidget />
           </div>
 
           {/* Content Creation Tools */}

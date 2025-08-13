@@ -26,6 +26,7 @@ const Navbar = () => {
     { name: 'Pricing', href: '/pricing', public: true },
     { name: 'Dashboard', href: '/dashboard', private: true },
     { name: 'Brand Suite', href: '/brand-suite', private: true },
+    { name: 'Social Media', href: '/social-media', private: true },
     { name: 'Favorites', href: '/favorites', private: true }
   ]
 
