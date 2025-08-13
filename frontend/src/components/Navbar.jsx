@@ -95,8 +95,8 @@ const Navbar = () => {
                         {user.email}
                       </p>
                       <p className="text-xs text-slate-400 capitalize">
-                        {profile?.subscription_tier === 'pro' ? 'Professional' : 
-                         profile?.subscription_tier === 'agency' ? 'Enterprise' : 
+                        {(profile?.subscription_tier === 'pro' || profile?.subscription_tier === 'pro_500' || profile?.subscription_tier === 'pro-500') ? 'Professional' : 
+                         (profile?.subscription_tier === 'agency' || profile?.subscription_tier === 'premium') ? 'Enterprise' : 
                          'Starter'} plan
                       </p>
                     </div>
@@ -208,8 +208,8 @@ const Navbar = () => {
                       {user.email}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">
-                      {profile?.subscription_tier === 'pro' ? 'Professional' : 
-                       profile?.subscription_tier === 'agency' ? 'Enterprise' : 
+                      {(profile?.subscription_tier === 'pro' || profile?.subscription_tier === 'pro_500' || profile?.subscription_tier === 'pro-500') ? 'Professional' : 
+                       (profile?.subscription_tier === 'agency' || profile?.subscription_tier === 'premium') ? 'Enterprise' : 
                        'Starter'} plan
                     </p>
                   </div>

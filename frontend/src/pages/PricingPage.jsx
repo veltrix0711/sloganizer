@@ -34,14 +34,19 @@ const PricingPage = () => {
     const currentPlan = profile.subscription_tier.toLowerCase()
     const checkPlan = planName.toLowerCase()
     
+    console.log('Checking subscription for plan:', planName, 'Current tier:', profile.subscription_tier)
+    
     // Map plan names to subscription tiers
     const planMapping = {
-      'starter': 'free',
-      'professional': 'pro', 
-      'enterprise': 'agency'
+      'starter': ['free'],
+      'professional': ['pro', 'pro_500', 'pro-500'], 
+      'enterprise': ['agency', 'premium']
     }
     
-    return currentPlan === (planMapping[checkPlan] || checkPlan)
+    const allowedTiers = planMapping[checkPlan] || [checkPlan]
+    const isSubscribed = allowedTiers.includes(currentPlan)
+    console.log('Is subscribed to', planName, ':', isSubscribed)
+    return isSubscribed
   }
 
   // Handle subscription plan selection
