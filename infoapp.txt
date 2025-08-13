@@ -1,0 +1,243 @@
+# INFOAPP - LaunchZone/Sloganizer Application Reference
+
+## APPLICATION ARCHITECTURE OVERVIEW
+
+### Project Structure:
+```
+Sloganiser/
+├── backend/           # Node.js/Express API
+├── frontend/          # React + Vite
+├── database/          # SQL schema files
+├── infoagent.txt      # General deployment guide
+└── infoapp.txt        # This file - app-specific info
+```
+
+## TECHNOLOGY STACK
+
+### Backend (Railway: sloganixerbackend)
+- **Runtime**: Node.js v18+
+- **Framework**: Express.js
+- **Database**: Supabase PostgreSQL
+- **Authentication**: Supabase Auth + JWT
+- **AI Services**: OpenAI GPT-4, Stability AI
+- **Payments**: Stripe
+- **Email**: Nodemailer
+- **Security**: Helmet, Rate Limiting, CORS
+
+### Frontend (Railway: sloganizer-frontend)
+- **Framework**: React 18 + Vite
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Routing**: React Router
+- **State Management**: React Context
+- **Build Tool**: Vite
+- **Deployment**: Nginx static files
+
+## CORE FEATURES & COMPONENTS
+
+### 1. Brand Profile System
+**Location**: `frontend/src/components/BrandProfile/`
+- **BrandProfileManager.jsx**: Main management interface
+- **BrandWizard.jsx**: Multi-step brand creation wizard
+- **BrandProfileCard.jsx**: Display component with tabs
+- **Steps/**: Individual wizard step components
+
+**Database**: `brand_profiles` table with 50+ comprehensive fields
+
+### 2. AI Brand Analysis Engine
+**Backend**: `backend/src/services/brandAnalysisService.js`
+**Frontend**: `frontend/src/components/BrandAnalysis/`
+- **BrandDashboard.jsx**: Analysis control panel
+- **AnalysisResults.jsx**: Display analysis results
+- **ContentSuggestions.jsx**: AI content recommendations
+
+**Features**:
+- Brand health scoring (0-100)
+- SWOT analysis
+- Content generation
+- Competitive analysis
+- Marketing strategy recommendations
+
+### 3. Content Generation Tools
+- **Slogan Generator**: Core original feature
+- **Logo Generator**: Stability AI integration
+- **Name Generator**: Business name suggestions
+- **Social Posts**: AI social media content
+
+### 4. User Management & Billing
+- **Authentication**: Supabase Auth
+- **Subscriptions**: Stripe integration
+- **Plans**: Starter (Free), Pro-50 ($19.99), Pro-200 ($49.99), Pro-500 ($99.99)
+- **Usage Tracking**: Request counting and limits
+
+## DATABASE SCHEMA
+
+### Core Tables:
+- `profiles`: User profile information
+- `brand_profiles`: Comprehensive brand data (50+ fields)
+- `brand_assets`: Logo and visual asset storage
+- `brand_analysis_history`: AI analysis results
+- `ai_content_suggestions`: Generated content ideas
+- `slogans`: Generated slogans with metadata
+- `favorites`: User-favorited items
+
+### Key Relationships:
+- Users have multiple brand profiles
+- Brand profiles have associated assets and analysis history
+- All content tied to user via user_id
+
+## API ENDPOINTS
+
+### Brand Suite APIs:
+- `GET /api/brand/profiles` - List user's brand profiles
+- `POST /api/brand/profiles` - Create new brand profile
+- `GET /api/brand/profiles/:id` - Get specific profile
+- `PATCH /api/brand/profiles/:id` - Update profile
+- `DELETE /api/brand/profiles/:id` - Delete profile
+- `GET /api/brand/default` - Get default profile
+
+### AI Analysis APIs:
+- `POST /api/brand-analysis/analyze/:brandId` - Run AI analysis
+- `POST /api/brand-analysis/content-suggestions/:brandId` - Generate content
+- `GET /api/brand-analysis/dashboard/:brandId` - Dashboard data
+- `GET /api/brand-analysis/history/:brandId` - Analysis history
+
+### Content Generation APIs:
+- `POST /api/slogans/generate` - Generate slogans
+- `POST /api/logos/generate` - Generate logos
+- `POST /api/names/generate` - Generate business names
+- `POST /api/social/generate` - Generate social posts
+
+### Billing & Auth APIs:
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/billing/subscription` - Get subscription status
+- `POST /api/payments/create-checkout` - Create Stripe checkout
+
+## ENVIRONMENT VARIABLES
+
+### Backend Required:
+```
+DATABASE_URL=                 # Supabase connection
+SUPABASE_URL=                # Supabase project URL
+SUPABASE_ANON_KEY=           # Supabase anon key
+SUPABASE_SERVICE_KEY=        # Supabase service key
+STRIPE_SECRET_KEY=           # Stripe secret key
+STRIPE_WEBHOOK_SECRET=       # Stripe webhook secret
+OPENAI_API_KEY=              # OpenAI API key
+STABILITY_API_KEY=           # Stability AI key
+FRONTEND_URL=                # Frontend domain
+RATE_LIMIT_WINDOW_MS=        # Rate limiting window
+RATE_LIMIT_MAX_REQUESTS=     # Rate limiting max requests
+```
+
+### Frontend Required:
+```
+VITE_SUPABASE_URL=           # Supabase project URL
+VITE_SUPABASE_ANON_KEY=      # Supabase anon key
+VITE_API_URL=                # Backend API URL
+VITE_STRIPE_PUBLISHABLE_KEY= # Stripe publishable key
+```
+
+## STRIPE CONFIGURATION
+
+### Price IDs (Production):
+- Starter: price_1Rv6l6GdU41U3RDABW3PJgU3 (Free)
+- Pro-50: price_1Rv6sTGdU41U3RDAMU7CB5Vf ($19.99)
+- Pro-200: price_1Rv6u0GdU41U3RDAqLI5XEde ($49.99)
+- Pro-500: price_1Rv6uvGdU41U3RDAjMpsNLkm ($99.99)
+
+### Features by Plan:
+- **Starter**: 10 requests/month, basic features
+- **Pro-50**: 50 requests/month, brand suite access
+- **Pro-200**: 200 requests/month, AI analysis
+- **Pro-500**: 500 requests/month, priority support
+
+## DEPLOYMENT CONFIGURATION
+
+### Railway Services:
+1. **sloganixerbackend**: Node.js backend API
+2. **sloganizer-frontend**: Static React app with Nginx
+
+### Build Commands:
+- **Backend**: No build step (uses src/server.js directly)
+- **Frontend**: `npm run build` (outputs to dist/)
+
+### Health Checks:
+- **Backend**: `GET /health` - Returns uptime and status
+- **Frontend**: Nginx serves static files from dist/
+
+## COMMON ISSUES & SOLUTIONS
+
+### 1. Brand Wizard Not Saving
+**Cause**: Missing required fields or validation errors
+**Solution**: Check form validation in each step component
+
+### 2. AI Analysis Failing
+**Cause**: Missing OpenAI API key or quota exceeded
+**Solution**: Verify OPENAI_API_KEY environment variable
+
+### 3. Logo Generation Failing
+**Cause**: Missing Stability API key
+**Solution**: Set STABILITY_API_KEY environment variable
+
+### 4. Subscription Issues
+**Cause**: Stripe webhook not processing correctly
+**Solution**: Check webhook secret and endpoint configuration
+
+### 5. Database Errors
+**Cause**: Schema misalignment or missing columns
+**Solution**: Apply latest schema from database/brand-schema-enhanced.sql
+
+## TESTING CHECKLIST
+
+### Pre-Deployment Testing:
+1. Brand profile creation and editing
+2. AI analysis generation
+3. Content suggestions
+4. Logo generation
+5. User authentication
+6. Subscription management
+7. Usage tracking
+
+### Post-Deployment Verification:
+1. Check health endpoints
+2. Test user registration/login
+3. Verify subscription creation
+4. Test AI API integrations
+5. Monitor error logs
+
+## FEATURE DEVELOPMENT WORKFLOW
+
+### Adding New AI Features:
+1. Update database schema if needed
+2. Create backend service methods
+3. Add API endpoints in routes/
+4. Build frontend components
+5. Update environment variables
+6. Test locally then deploy
+
+### Brand Suite Enhancements:
+1. Update brand wizard steps if needed
+2. Modify brandAnalysisService.js
+3. Update BrandProfileCard.jsx display
+4. Test with various brand profiles
+5. Ensure backward compatibility
+
+## MONITORING & ANALYTICS
+
+### Key Metrics to Track:
+- User registration rates
+- Subscription conversion
+- AI API usage and costs
+- Brand profile completion rates
+- Feature adoption rates
+- Error rates by endpoint
+
+### Logging Strategy:
+- All API requests logged with timestamps
+- AI API calls tracked with costs
+- Error tracking with stack traces
+- User activity monitoring
+
+This document should be referenced when making updates to any part of the LaunchZone application.

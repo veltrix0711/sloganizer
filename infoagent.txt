@@ -1,0 +1,151 @@
+# INFOAGENT - Railway Deployment & Problem-Solving Reference Guide
+
+## CRITICAL RAILWAY DEPLOYMENT PATTERNS
+
+### Previous Successful Deployment History:
+- c9308a6b: Fix nodemailer createTransporter to createTransport syntax error ✅
+- 37049f39: Fix critical issues: JSON parsing for 429 errors and environment variable support ✅
+- f33d6ba3: Fix favorites database schema - remove non-existent slogan_text column ✅
+- 7d689917: Fix API billing routes and favorites database column errors ✅
+
+### Common Railway Deployment Errors & Solutions:
+
+#### 1. MISSING DEPENDENCIES ERROR
+**Error Pattern**: "Cannot find package 'openai' imported from..."
+**Root Cause**: Package missing from package.json dependencies
+**Solution**: 
+- Add missing package to backend/package.json dependencies
+- Use exact version numbers for stability
+- Example: "openai": "^4.28.0"
+
+#### 2. MODULE IMPORT ERRORS
+**Error Pattern**: "createTransporter is not a function"
+**Root Cause**: Incorrect API method names
+**Solution**: 
+- Check official documentation for correct method names
+- Common fix: createTransporter → createTransport
+
+#### 3. DATABASE SCHEMA ERRORS
+**Error Pattern**: "column 'field_name' does not exist"
+**Root Cause**: Database schema out of sync with code
+**Solution**:
+- Update database schema before deploying
+- Remove references to non-existent columns
+- Apply schema changes via Supabase dashboard
+
+#### 4. API ROUTE CONFLICTS
+**Error Pattern**: 404 errors on /api/* routes
+**Root Cause**: Frontend calling wrong API endpoints
+**Solution**:
+- Ensure frontend API calls match backend route definitions
+- Example: /api/payments/* vs /api/billing/*
+
+#### 5. ENVIRONMENT VARIABLE ISSUES
+**Error Pattern**: Configuration not found errors
+**Root Cause**: Missing environment variables on Railway
+**Solution**:
+- Use `railway variables --set "KEY=value"` to add env vars
+- Verify Railway service is correctly selected
+- Check `railway status` before setting variables
+
+### DEPLOYMENT PROCESS BEST PRACTICES:
+
+#### Step 1: Pre-Deployment Checks
+1. Verify all dependencies in package.json
+2. Test imports and API method names
+3. Check database schema alignment
+4. Validate environment variables locally
+
+#### Step 2: Git Operations
+```bash
+git add -A
+git commit -m "Description with 🤖 Generated with [Claude Code]"
+git push
+```
+
+#### Step 3: Railway Deployment
+```bash
+railway status  # Verify correct project/service
+railway variables --set "KEY=value"  # Add env vars if needed
+railway up  # Deploy
+```
+
+#### Step 4: Monitor Deployment
+- Check Railway build logs immediately
+- Monitor container startup logs
+- Test critical endpoints after deployment
+
+### ERROR INVESTIGATION METHODOLOGY:
+
+1. **Read Full Error Logs**: Look beyond just error message
+2. **Check Recent Changes**: Compare with last successful deployment
+3. **Verify Dependencies**: Ensure all imports have corresponding packages
+4. **Database Alignment**: Check schema matches code expectations
+5. **Environment Variables**: Verify all required env vars are set
+
+### RAILWAY-SPECIFIC GOTCHAS:
+
+1. **Service Naming**: Use exact service names from `railway list`
+2. **Multi-Service Projects**: Always specify service with `--service` flag
+3. **Environment Variables**: Set before deployment, not after
+4. **Build Context**: Railway uses entire project context, not just subdirectories
+5. **Caching Issues**: Sometimes requires multiple deploys to clear cache
+
+### DEBUGGING COMMANDS:
+
+```bash
+# Check project status
+railway status
+
+# List all projects
+railway list
+
+# Get build logs
+railway logs --service [SERVICE_NAME]
+
+# Check environment variables
+railway variables
+
+# Force redeploy
+railway up --detach
+```
+
+### AI SERVICE INTEGRATION PATTERNS:
+
+#### OpenAI Integration:
+- Always add to package.json: "openai": "^4.28.0"
+- Use environment variable: OPENAI_API_KEY
+- Import pattern: `import OpenAI from 'openai';`
+- Initialize: `const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });`
+
+#### Database Schema for AI Features:
+- brand_analysis_history table for analysis storage
+- ai_content_suggestions table for content ideas
+- Enhanced brand_profiles with AI result fields
+
+### FRONTEND BUILD ISSUES:
+
+#### Common React Build Errors:
+1. **Case Sensitivity**: Component imports must match exact file names
+2. **Missing Dependencies**: Check all imports have corresponding packages
+3. **Environment Variables**: Use VITE_ prefix for frontend env vars
+4. **Build Output**: Ensure dist/ directory is included in deployment
+
+### SUCCESS PATTERNS:
+
+1. **Incremental Changes**: Make small, testable changes
+2. **Version Control**: Commit frequently with descriptive messages
+3. **Testing Locally**: Test changes locally before deploying
+4. **Monitoring**: Watch deployment logs in real-time
+5. **Rollback Ready**: Keep last known good commit ID handy
+
+### EMERGENCY ROLLBACK:
+
+If deployment fails catastrophically:
+```bash
+git log --oneline -5  # Find last good commit
+git reset --hard [COMMIT_ID]  # Reset to good state
+railway up  # Redeploy stable version
+```
+
+This guide should be consulted before making any Railway deployments or when troubleshooting deployment issues.
