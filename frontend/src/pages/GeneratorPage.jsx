@@ -9,6 +9,7 @@ import NameGeneratorWidget from '../components/Widgets/NameGeneratorWidget'
 import LogoGeneratorWidget from '../components/Widgets/LogoGeneratorWidget'
 import ActivationChecklist from '../components/Widgets/ActivationChecklist'
 import SocialPostTemplates from '../components/Widgets/SocialPostTemplates'
+import CompleteBrandGenerator from '../components/BusinessSuite/CompleteBrandGenerator'
 
 const GeneratorPage = () => {
   const { user } = useAuth()
@@ -279,26 +280,36 @@ const GeneratorPage = () => {
           
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-              Slogan Generator
+              Brand Toolkit Studio
             </span>
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            Create compelling marketing slogans that capture your brand's essence and resonate 
-            with your target audience using our AI-powered generator.
+            Create your complete brand identity with AI-powered slogans, business names, logos, 
+            and professional content - everything you need to launch your brand successfully.
           </p>
           
           {/* Free generations remaining indicator */}
           {!user && remainingFreeGenerations !== null && (
-            <div className="mt-6 inline-flex items-center px-4 py-2 bg-slate-800/50 border border-cyan-500/50 rounded-full text-sm text-cyan-300 backdrop-blur-sm">
-              <Zap className="h-4 w-4 mr-2 text-cyan-400" />
-              {remainingFreeGenerations} free generation{remainingFreeGenerations !== 1 ? 's' : ''} remaining
+            <div className="mt-8 flex justify-center">
+              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/50 rounded-full text-cyan-300 backdrop-blur-sm shadow-lg">
+                <Zap className="h-5 w-5 mr-2 text-cyan-400" />
+                <span className="font-medium">
+                  {remainingFreeGenerations} free generation{remainingFreeGenerations !== 1 ? 's' : ''} remaining
+                </span>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-8">
           {/* Input Form */}
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 shadow-2xl">
+            <div className="flex items-center mb-6">
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                <Wand2 className="h-5 w-5 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-white">AI Slogan Generator</h2>
+            </div>
             <form onSubmit={(e) => { e.preventDefault(); generateSlogans(); }}>
               {/* Business Name */}
               <div className="mb-6">
@@ -560,10 +571,13 @@ const GeneratorPage = () => {
             {generatedSlogans.length > 0 ? (
               <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white flex items-center">
-                    <Sparkles className="h-6 w-6 text-cyan-400 mr-2" />
-                    Generated Slogans
-                  </h2>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white flex items-center mb-2">
+                      <Sparkles className="h-6 w-6 text-cyan-400 mr-2" />
+                      Your Brand Slogans
+                    </h2>
+                    <p className="text-slate-400 text-sm">AI-generated slogans tailored to your brand</p>
+                  </div>
                   <button
                     onClick={generateSlogans}
                     disabled={isGenerating}
@@ -656,35 +670,51 @@ const GeneratorPage = () => {
                   <Wand2 className="h-10 w-10 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-4">
-                  Ready to <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">Generate</span>?
+                  Ready to <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">Create</span> Your Brand?
                 </h2>
                 <p className="text-slate-300 text-lg leading-relaxed">
                   Fill in your business details and let our AI create compelling slogans 
-                  that perfectly capture your brand's essence.
+                  that perfectly capture your brand's essence. Start with slogans, then explore 
+                  our complete brand toolkit below.
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Additional Tools Widgets */}
-        <div className="mt-12">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">
-              More <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Creative Tools</span>
+        {/* Section Separator */}
+        <div className="flex items-center my-16">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+          <div className="px-6">
+            <div className="w-3 h-3 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-full"></div>
+          </div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+        </div>
+
+        {/* Brand Toolkit Widgets */}
+        <div>
+          <div className="text-center mb-12">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-2xl shadow-purple-500/25">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Complete <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Brand Toolkit</span>
             </h2>
-            <p className="text-slate-300">
-              Explore our additional generators to build your complete brand identity
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              Build your entire brand identity with our comprehensive suite of AI-powered tools
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Quick Tools Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
             <NameGeneratorWidget user={user} />
             <LogoGeneratorWidget user={user} businessName={formData.businessName} />
           </div>
 
-          {/* Professional Social Post Templates */}
-          <div className="mt-8 max-w-4xl mx-auto">
+          {/* Content Creation Tools */}
+          <div className="max-w-5xl mx-auto mb-12">
             <SocialPostTemplates 
               user={user} 
               businessName={formData.businessName}
@@ -692,6 +722,13 @@ const GeneratorPage = () => {
               brandProfile={selectedBrandProfile}
             />
           </div>
+
+          {/* Premium Business Suite */}
+          {user?.subscription?.plan_code === 'AGENCY' || user?.subscription_tier === 'pro-500' ? (
+            <div className="max-w-4xl mx-auto">
+              <CompleteBrandGenerator user={user} brandProfile={selectedBrandProfile} />
+            </div>
+          ) : null}
         </div>
       </div>
 
