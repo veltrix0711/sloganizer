@@ -95,7 +95,9 @@ const Navbar = () => {
                         {user.email}
                       </p>
                       <p className="text-xs text-slate-400 capitalize">
-                        {profile?.subscription_tier || 'free'} plan
+                        {profile?.subscription_tier === 'pro' ? 'Professional' : 
+                         profile?.subscription_tier === 'agency' ? 'Enterprise' : 
+                         'Starter'} plan
                       </p>
                     </div>
                     
@@ -206,7 +208,9 @@ const Navbar = () => {
                       {user.email}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">
-                      {profile?.subscription_tier || 'free'} plan
+                      {profile?.subscription_tier === 'pro' ? 'Professional' : 
+                       profile?.subscription_tier === 'agency' ? 'Enterprise' : 
+                       'Starter'} plan
                     </p>
                   </div>
                   

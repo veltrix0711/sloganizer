@@ -112,7 +112,11 @@ const ProfilePage = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Plan</span>
-                  <span className="font-medium capitalize">{profile?.subscription_tier || 'free'}</span>
+                  <span className="font-medium capitalize">
+                    {profile?.subscription_tier === 'pro' ? 'Professional' : 
+                     profile?.subscription_tier === 'agency' ? 'Enterprise' : 
+                     'Starter'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status</span>

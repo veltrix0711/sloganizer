@@ -178,7 +178,7 @@ export const AuthProvider = ({ children }) => {
         email: userData.user?.email || '',
         first_name: userData.user?.user_metadata?.first_name || '',
         last_name: userData.user?.user_metadata?.last_name || '',
-        subscription_plan: 'free',
+        subscription_tier: 'free',
         subscription_status: 'active',
         slogans_remaining: 3
       }
