@@ -197,4 +197,62 @@ router.get('/upgrade-suggestions', authMiddleware, async (req, res) => {
   }
 });
 
+// Admin route to directly update subscription (temporary, no auth)
+router.post('/admin-update/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { subscription_tier } = req.body;
+    
+    console.log('Admin update request for:', email, 'to tier:', subscription_tier);
+    
+    if (!subscription_tier) {
+      return res.status(400).json({
+        success: false,
+        error: 'subscription_tier required in body'
+      });
+    }
+
+    // Update user subscription directly
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ 
+        subscription_tier,
+        subscription_status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .eq('email', email)
+      .select();
+
+    if (error) {
+      console.error('Error updating subscription:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    console.log('Successfully updated:', data);
+    
+    res.json({
+      success: true,
+      updated: data[0],
+      message: `Updated ${email} to ${subscription_tier}`
+    });
+
+  } catch (error) {
+    console.error('Admin update error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 export default router;
