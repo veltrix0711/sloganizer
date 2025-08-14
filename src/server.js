@@ -92,7 +92,12 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     ok: true, 
     timestamp: new Date().toISOString(),
-    routes: ['billing', 'payments', 'social-media', 'favorites/stats']
+    routes: ['billing', 'payments', 'social-media', 'favorites/stats'],
+    supabase_available: !!supabase,
+    env_check: {
+      supabase_url: !!process.env.SUPABASE_URL,
+      supabase_service_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    }
   });
 });
 
@@ -100,6 +105,15 @@ app.get('/api/health', (req, res) => {
 app.get('/api/admin/check-user/:email', async (req, res) => {
   try {
     const { email } = req.params;
+    console.log('Checking user:', email);
+    
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return res.status(500).json({
+        success: false,
+        error: 'Database connection not available'
+      });
+    }
     
     // Get user data from profiles table
     const { data, error } = await supabase
@@ -108,11 +122,14 @@ app.get('/api/admin/check-user/:email', async (req, res) => {
       .eq('email', email)
       .single();
 
+    console.log('Supabase response:', { data, error });
+
     if (error) {
       console.error('Error checking user:', error);
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: error.message || 'User not found',
+        details: error
       });
     }
 
@@ -125,7 +142,8 @@ app.get('/api/admin/check-user/:email', async (req, res) => {
     console.error('Admin check error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     });
   }
 });
@@ -133,6 +151,7 @@ app.get('/api/admin/check-user/:email', async (req, res) => {
 // Admin route to check/update user subscription (temporary)
 app.post('/api/admin/update-subscription', async (req, res) => {
   try {
+    console.log('Update request received:', req.body);
     const { email, subscription_tier } = req.body;
     
     if (!email || !subscription_tier) {
@@ -141,6 +160,16 @@ app.post('/api/admin/update-subscription', async (req, res) => {
         error: 'Email and subscription_tier required'
       });
     }
+
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return res.status(500).json({
+        success: false,
+        error: 'Database connection not available'
+      });
+    }
+
+    console.log('Updating subscription for:', email, 'to:', subscription_tier);
 
     // Update user subscription in profiles table
     const { data, error } = await supabase
@@ -153,15 +182,25 @@ app.post('/api/admin/update-subscription', async (req, res) => {
       .eq('email', email)
       .select();
 
+    console.log('Supabase update response:', { data, error });
+
     if (error) {
       console.error('Error updating subscription:', error);
       return res.status(500).json({
         success: false,
-        error: error.message
+        error: error.message,
+        details: error
       });
     }
 
-    console.log('Updated subscription for:', email, 'to:', subscription_tier);
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found or no rows updated'
+      });
+    }
+
+    console.log('Successfully updated subscription for:', email, 'to:', subscription_tier);
     
     res.json({
       success: true,
@@ -173,7 +212,8 @@ app.post('/api/admin/update-subscription', async (req, res) => {
     console.error('Admin update error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     });
   }
 });
