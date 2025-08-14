@@ -375,99 +375,26 @@ const AnalyticsPage = () => {
           </div>
         </div>
 
-        {/* Connected Accounts Section */}
-        {connectedAccounts.length === 0 && (
-          <div className="card-primary mb-8">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-grad-quantum rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Plus className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-heading mb-2">Connect Your Social Media</h3>
-              <p className="text-body mb-6">
-                Connect your social media accounts to start tracking your content performance and get detailed analytics.
-              </p>
-              <button
-                onClick={() => setShowConnectModal(true)}
-                className="btn-primary flex items-center mx-auto"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Connect Account
-              </button>
+        {/* Social Media Analytics Coming Soon Section */}
+        <div className="card-primary mb-8">
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-grad-quantum rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Plus className="h-8 w-8 text-white" />
             </div>
+            <h3 className="text-xl font-bold text-heading mb-2">Social Media Analytics</h3>
+            <p className="text-body mb-6">
+              Real-time social media tracking and analytics are coming soon! We're building secure integrations with all major platforms.
+            </p>
+            <button
+              onClick={() => setShowConnectModal(true)}
+              className="btn-secondary flex items-center mx-auto"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Preview Feature
+            </button>
           </div>
-        )}
+        </div>
 
-        {/* Connected Accounts Display */}
-        {connectedAccounts.length > 0 && (
-          <div className="card-primary mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-heading">Connected Accounts</h3>
-              <button
-                onClick={() => setShowConnectModal(true)}
-                className="btn-secondary btn-small flex items-center"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Account
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {connectedAccounts.map((account, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-space/30 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    {getPlatformIcon(account.platform)}
-                    <div>
-                      <p className="font-medium text-heading capitalize">{account.platform}</p>
-                      <p className="text-sm text-muted">@{account.username}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleSyncData(account.platform)}
-                      disabled={syncing}
-                      className="p-2 hover:bg-space rounded-lg transition-colors"
-                      title="Sync this account"
-                    >
-                      <RefreshCw className={`h-4 w-4 text-muted ${syncing ? 'animate-spin' : ''}`} />
-                    </button>
-                    <button
-                      className="p-2 hover:bg-space rounded-lg transition-colors"
-                      title="Account settings"
-                    >
-                      <Settings className="h-4 w-4 text-muted" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Sync Status */}
-            {syncStatus && (
-              <div className="mt-4 p-4 bg-space/20 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-heading">Sync Status</p>
-                    <p className="text-xs text-muted">
-                      {syncStatus.needsSyncCount > 0 
-                        ? `${syncStatus.needsSyncCount} account(s) need syncing`
-                        : 'All accounts up to date'
-                      }
-                    </p>
-                  </div>
-                  {syncStatus.needsSyncCount > 0 && (
-                    <button
-                      onClick={() => handleSyncData()}
-                      disabled={syncing}
-                      className="btn-secondary btn-small"
-                    >
-                      Sync All
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Performance Chart */}

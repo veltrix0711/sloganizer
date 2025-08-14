@@ -20,6 +20,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProfilePage from './pages/ProfilePage'
 import BrandSuitePage from './pages/BrandSuitePage'
 import SocialMediaPage from './pages/SocialMediaPage'
+import TemplateMarketplacePage from './pages/TemplateMarketplacePage'
+import AIStrategyToolsPage from './pages/AIStrategyToolsPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Components
@@ -45,6 +47,7 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/generate" element={<GeneratorPage />} />
+              <Route path="/templates" element={<TemplateMarketplacePage />} />
               <Route path="/pricing" element={<NewPricingPage />} />
               <Route path="/contact-sales" element={<ContactSalesPage />} />
               <Route path="/login" element={<LoginPage />} />
@@ -82,6 +85,11 @@ function App() {
               <Route path="/social-media" element={
                 <PrivateRoute>
                   <SocialMediaPage />
+                </PrivateRoute>
+              } />
+              <Route path="/ai-strategy" element={
+                <PrivateRoute>
+                  <AIStrategyToolsPage />
                 </PrivateRoute>
               } />
               

@@ -17,7 +17,7 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
       icon: <Instagram className="h-6 w-6" />,
       color: 'from-pink-500 to-purple-600',
       description: 'Connect your Instagram Business account to track posts, stories, and reels performance.',
-      available: true
+      available: false
     },
     {
       id: 'facebook',
@@ -25,7 +25,7 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
       icon: <Facebook className="h-6 w-6" />,
       color: 'from-blue-500 to-blue-700',
       description: 'Connect your Facebook Page to analyze post engagement and reach.',
-      available: true
+      available: false
     },
     {
       id: 'twitter',
@@ -33,19 +33,16 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
       icon: <Twitter className="h-6 w-6" />,
       color: 'from-blue-400 to-blue-600',
       description: 'Connect your Twitter account to track tweet performance and engagement.',
-      available: false // Twitter API requires special approval
+      available: false
     }
   ]
 
   const handlePlatformSelect = (platform) => {
     setSelectedPlatform(platform)
     
-    if (!platform.available) {
-      toast.error(`${platform.name} integration coming soon!`)
-      return
-    }
-
-    handleConnect(platform)
+    // All platforms are locked with coming soon message
+    toast.info(`${platform.name} integration coming soon! We're working on bringing you real social media analytics.`)
+    return
   }
 
   const handleConnect = async (platform) => {
@@ -134,8 +131,8 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <div>
-            <h2 className="text-xl font-bold text-heading">Connect Social Media</h2>
-            <p className="text-sm text-muted mt-1">Connect your accounts to start tracking analytics</p>
+            <h2 className="text-xl font-bold text-heading">Social Media Analytics</h2>
+            <p className="text-sm text-muted mt-1">Coming soon - Real-time social media tracking and analytics</p>
           </div>
           <button
             onClick={onClose}
@@ -150,7 +147,7 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
           {step === 'select' && (
             <div className="space-y-4">
               <p className="text-body text-sm mb-6">
-                Choose which social media platforms you'd like to connect to start tracking your content performance.
+                We're building real social media analytics to help you track your content performance across all platforms. This feature is coming soon!
               </p>
 
               {platforms.map((platform) => (
@@ -189,10 +186,10 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
                 <div className="flex items-start space-x-3">
                   <AlertCircle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-medium text-heading">Secure Connection</h4>
+                    <h4 className="text-sm font-medium text-heading">Coming Soon</h4>
                     <p className="text-xs text-muted mt-1">
-                      Your social media data is encrypted and only used to provide analytics insights. 
-                      We never post on your behalf without permission.
+                      We're working on secure OAuth integrations with all major social platforms. 
+                      Your data will be encrypted and only used for analytics insights.
                     </p>
                   </div>
                 </div>
@@ -245,11 +242,11 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
         {step === 'select' && (
           <div className="px-6 py-4 border-t border-slate-700 bg-slate-700/30">
             <p className="text-xs text-muted text-center">
-              Need help? Check our{' '}
-              <a href="/help" className="text-electric hover:underline">
-                connection guide
+              Get notified when social media analytics launches.{' '}
+              <a href="/pricing" className="text-electric hover:underline">
+                Upgrade to Pro
               </a>{' '}
-              for step-by-step instructions.
+              for early access.
             </p>
           </div>
         )}

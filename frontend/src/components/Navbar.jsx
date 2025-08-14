@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Rocket, User, LogOut, Heart, Settings, Building, BarChart3 } from 'lucide-react'
+import { Menu, X, Rocket, User, LogOut, Heart, Settings, Building, BarChart3, Brain } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 
 const Navbar = () => {
@@ -39,10 +39,12 @@ const Navbar = () => {
   const navigationItems = [
     { name: 'Home', href: '/', public: true },
     { name: 'Generate', href: '/generate', public: true },
+    { name: 'Templates', href: '/templates', public: true },
     { name: 'Pricing', href: '/pricing', public: true },
     { name: 'Dashboard', href: '/dashboard', private: true },
     { name: 'Analytics', href: '/analytics', private: true },
     { name: 'Brand Suite', href: '/brand-suite', private: true },
+    { name: 'AI Strategy', href: '/ai-strategy', private: true },
     { name: 'Social Media', href: '/social-media', private: true },
     { name: 'Favorites', href: '/favorites', private: true }
   ]
@@ -143,6 +145,15 @@ const Navbar = () => {
                     >
                       <Building className="h-4 w-4 mr-3" />
                       Brand Suite
+                    </Link>
+                    
+                    <Link
+                      to="/ai-strategy"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
+                    >
+                      <Brain className="h-4 w-4 mr-3" />
+                      AI Strategy
                     </Link>
                     
                     <Link
@@ -257,6 +268,15 @@ const Navbar = () => {
                     >
                       <Building className="h-4 w-4 mr-2" />
                       Brand Suite
+                    </Link>
+                    
+                    <Link
+                      to="/ai-strategy"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
+                    >
+                      <Brain className="h-4 w-4 mr-2" />
+                      AI Strategy
                     </Link>
                     
                     <Link
