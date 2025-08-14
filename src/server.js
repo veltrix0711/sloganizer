@@ -14,6 +14,8 @@ import brandAnalysisRoutes from './routes/brandAnalysis.js';
 import favoritesRoutes from './routes/favorites.js';
 import slogansRoutes from './routes/slogans.js';
 import exportRoutes from './routes/export.js';
+import templatesRoutes from './routes/templates.js';
+import aiStrategyRoutes from './routes/aiStrategy.js';
 import { supabase } from './services/supabase.js';
 
 dotenv.config();
@@ -154,6 +156,12 @@ app.use('/api/slogans', slogansRoutes);
 
 // Export routes
 app.use('/api/export', exportRoutes);
+
+// Templates routes
+app.use('/api/templates', templatesRoutes);
+
+// AI Strategy routes
+app.use('/api/ai-strategy', aiStrategyRoutes);
 
 // Test route
 app.get('/api/test', (req, res) => {
