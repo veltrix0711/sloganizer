@@ -96,6 +96,40 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Admin route to check user subscription (temporary)
+app.get('/api/admin/check-user/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    // Get user data from profiles table
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error) {
+      console.error('Error checking user:', error);
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      user: data
+    });
+
+  } catch (error) {
+    console.error('Admin check error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Admin route to check/update user subscription (temporary)
 app.post('/api/admin/update-subscription', async (req, res) => {
   try {
