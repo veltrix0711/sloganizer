@@ -20,7 +20,8 @@
       "Bash(start debug-test.html)",
       "Bash(grep:*)",
       "Bash(git reset:*)",
-      "Bash(start update-subscription.html)"
+      "Bash(start update-subscription.html)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

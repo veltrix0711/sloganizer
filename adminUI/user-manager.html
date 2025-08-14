@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Manager - Sloganizer Admin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+        }
+        .search-bar input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        .btn-secondary:hover {
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+        .btn-warning:hover {
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+        .btn-danger:hover {
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .user-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        .user-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.15);
+        }
+        .user-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .user-email {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .user-details {
+            margin-bottom: 15px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .detail-label {
+            opacity: 0.8;
+        }
+        .detail-value {
+            font-weight: 500;
+        }
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .tier-free { background: #6B7280; }
+        .tier-pro { background: #059669; }
+        .tier-agency { background: #DC2626; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-active { background: #059669; }
+        .status-inactive { background: #6B7280; }
+        .status-trial { background: #F59E0B; }
+        .status-cancelled { background: #DC2626; }
+        .user-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.2) !important;
+            border: 1px solid #4CAF50 !important;
+        }
+        .error {
+            background: rgba(244, 67, 54, 0.2) !important;
+            border: 1px solid #f44336 !important;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .no-users {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.6;
+        }
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 User Manager</h1>
+            <p>View, edit, and manage user accounts</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="card">
+            <h2>📊 User Statistics</h2>
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="freeUsers">-</div>
+                    <div class="stat-label">Free Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="proUsers">-</div>
+                    <div class="stat-label">Pro Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="agencyUsers">-</div>
+                    <div class="stat-label">Agency Users</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="card">
+            <h2>🔍 Search and Filters</h2>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search by email, name, or ID...">
+                <button class="btn btn-secondary" onclick="searchUsers()">Search</button>
+                <button class="btn" onclick="loadAllUsers()">Load All Users</button>
+                <button class="btn btn-warning" onclick="refreshStats()">Refresh Stats</button>
+            </div>
+        </div>
+
+        <!-- Users List -->
+        <div class="card">
+            <h2>👤 Users</h2>
+            <div class="users-grid" id="usersGrid">
+                <div class="no-users">
+                    Click "Load All Users" or search for specific users to get started
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://sloganixerbackend-production.up.railway.app/api';
+        let allUsers = [];
+        
+        function showResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.innerHTML = message;
+            resultDiv.style.display = 'block';
+        }
+
+        function getInitials(firstName, lastName) {
+            return ((firstName || '').charAt(0) + (lastName || '').charAt(0)).toUpperCase() || '?';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function createUserCard(user) {
+            const initials = getInitials(user.first_name, user.last_name);
+            const tierClass = user.subscription_plan ? `tier-${user.subscription_plan}` : 'tier-free';
+            const statusClass = user.subscription_status ? `status-${user.subscription_status}` : 'status-inactive';
+            
+            return `
+                <div class="user-card">
+                    <div class="user-header">
+                        <div class="user-avatar">${initials}</div>
+                        <div class="user-info">
+                            <div class="user-name">${user.first_name || ''} ${user.last_name || ''}</div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="user-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Plan:</span>
+                            <span class="detail-value">
+                                <span class="tier-badge ${tierClass}">${user.subscription_plan || 'free'}</span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value">
+                                <span class="status-badge ${statusClass}">${user.subscription_status || 'inactive'}</span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Created:</span>
+                            <span class="detail-value">${formatDate(user.created_at)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Updated:</span>
+                            <span class="detail-value">${formatDate(user.updated_at)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="user-actions">
+                        <button class="btn btn-small btn-secondary" onclick="viewUserDetails('${user.email}')">
+                            View Details
+                        </button>
+                        <button class="btn btn-small" onclick="editUser('${user.email}')">
+                            Edit
+                        </button>
+                        <button class="btn btn-small btn-warning" onclick="upgradeToPro('${user.email}')">
+                            → Pro
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="deleteUser('${user.email}')">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayUsers(users) {
+            const usersGrid = document.getElementById('usersGrid');
+            
+            if (!users || users.length === 0) {
+                usersGrid.innerHTML = '<div class="no-users">No users found</div>';
+                return;
+            }
+            
+            usersGrid.innerHTML = users.map(user => createUserCard(user)).join('');
+        }
+
+        function updateStats(users) {
+            if (!users) return;
+            
+            const stats = {
+                total: users.length,
+                free: users.filter(u => !u.subscription_plan || u.subscription_plan === 'free').length,
+                pro: users.filter(u => u.subscription_plan === 'pro').length,
+                agency: users.filter(u => u.subscription_plan === 'agency').length
+            };
+            
+            document.getElementById('totalUsers').textContent = stats.total;
+            document.getElementById('freeUsers').textContent = stats.free;
+            document.getElementById('proUsers').textContent = stats.pro;
+            document.getElementById('agencyUsers').textContent = stats.agency;
+        }
+
+        async function loadAllUsers() {
+            showResult('Loading all users...');
+            
+            try {
+                // Since we don't have a get-all-users endpoint, we'll simulate it
+                // In a real app, you'd have an endpoint like /admin/users
+                showResult('ℹ️ This feature requires a dedicated endpoint to list all users. Currently showing sample data.', false);
+                
+                // Sample data for demonstration
+                const sampleUsers = [
+                    {
+                        email: 'corey.osmond99@gmail.com',
+                        first_name: 'Corey',
+                        last_name: 'Osmond',
+                        subscription_plan: 'pro',
+                        subscription_status: 'active',
+                        created_at: '2024-01-15T10:30:00Z',
+                        updated_at: '2024-01-20T15:45:00Z'
+                    },
+                    {
+                        email: 'demo@example.com',
+                        first_name: 'Demo',
+                        last_name: 'User',
+                        subscription_plan: 'free',
+                        subscription_status: 'active',
+                        created_at: '2024-01-10T08:00:00Z',
+                        updated_at: '2024-01-10T08:00:00Z'
+                    }
+                ];
+                
+                allUsers = sampleUsers;
+                displayUsers(allUsers);
+                updateStats(allUsers);
+                
+            } catch (error) {
+                showResult(`❌ Error loading users: ${error.message}`, false);
+            }
+        }
+
+        async function searchUsers() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            
+            if (!searchTerm) {
+                showResult('Please enter a search term', false);
+                return;
+            }
+            
+            showResult('Searching users...');
+            
+            try {
+                // For now, we'll search in our cached users or do a single user lookup
+                if (searchTerm.includes('@')) {
+                    // Email search - use existing lookup endpoint
+                    const response = await fetch(`${API_BASE}/admin/check-user/${searchTerm}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        displayUsers([data.user]);
+                        updateStats([data.user]);
+                        showResult(`✅ Found user: ${data.user.email}`, true);
+                    } else {
+                        displayUsers([]);
+                        showResult(`❌ User not found: ${data.error}`, false);
+                    }
+                } else {
+                    // Filter cached users
+                    const filtered = allUsers.filter(user => 
+                        user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                    
+                    displayUsers(filtered);
+                    updateStats(filtered);
+                    showResult(`Found ${filtered.length} users matching "${searchTerm}"`, true);
+                }
+                
+            } catch (error) {
+                showResult(`❌ Search error: ${error.message}`, false);
+            }
+        }
+
+        async function viewUserDetails(email) {
+            showResult('Loading user details...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/check-user/${email}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`
+                        <h3>👤 User Details: ${data.user.email}</h3>
+                        <pre>${JSON.stringify(data.user, null, 2)}</pre>
+                    `, true);
+                } else {
+                    showResult(`❌ Failed to load user details: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function editUser(email) {
+            // For now, redirect to subscription manager
+            window.open(`subscription-manager.html?email=${encodeURIComponent(email)}`, '_blank');
+        }
+
+        async function upgradeToPro(email) {
+            if (!confirm(`Upgrade ${email} to Pro plan?`)) return;
+            
+            showResult('Upgrading user to Pro...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/billing/admin-update/${email}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        subscription_plan: 'pro',
+                        subscription_status: 'active'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`🎉 Successfully upgraded ${email} to Pro!`, true);
+                    // Refresh the user list
+                    if (allUsers.length > 0) {
+                        loadAllUsers();
+                    }
+                } else {
+                    showResult(`❌ Upgrade failed: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function deleteUser(email) {
+            if (!confirm(`Are you sure you want to delete user ${email}? This action cannot be undone.`)) return;
+            
+            showResult(`⚠️ Delete user functionality not implemented. This would require a dedicated admin endpoint to safely remove users.`, false);
+        }
+
+        async function refreshStats() {
+            if (allUsers.length > 0) {
+                updateStats(allUsers);
+                showResult('Statistics refreshed', true);
+            } else {
+                showResult('No users loaded. Please load users first.', false);
+            }
+        }
+
+        // Auto-search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchUsers();
+            }
+        });
+
+        // Initialize with sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get('email');
+            
+            if (email) {
+                document.getElementById('searchInput').value = email;
+                searchUsers();
+            }
+        });
+    </script>
+</body>
+</html>

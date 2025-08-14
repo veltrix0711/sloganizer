@@ -290,16 +290,35 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     try {
       setSessionLoading(true)
+      console.log('AuthContext: Starting sign out process...')
       
+      // Clear cache first
+      profileCache.current = {}
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      if (error) {
+        console.error('Supabase sign out error:', error)
+        throw error
+      }
 
+      // Clear local state immediately
+      setUser(null)
+      setProfile(null)
+      
+      console.log('AuthContext: Sign out successful')
       toast.success('Signed out successfully!')
       return { success: true }
       
     } catch (error) {
       console.error('Sign out error:', error)
-      toast.error(error.message || 'Failed to sign out')
+      
+      // Even if there's an error, clear local state to prevent stuck sessions
+      setUser(null)
+      setProfile(null)
+      profileCache.current = {}
+      
+      toast.error(error.message || 'Signed out with errors')
       return { success: false, error: error.message }
     } finally {
       setSessionLoading(false)

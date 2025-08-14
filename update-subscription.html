@@ -51,11 +51,12 @@
 <body>
     <div class="container">
         <h1>🔧 Fix Subscription Status</h1>
-        <p>This will update corey.osmond99@gmail.com to Professional (pro_500) subscription.</p>
+        <p>This will update corey.osmond99@gmail.com to Professional (pro) subscription.</p>
         
         <div>
             <button onclick="checkUser()">1. Check Current Status</button>
             <button onclick="debugTable()">🔍 Debug Table Structure</button>
+            <button onclick="testAllowedValues()">🧪 Test Allowed Values</button>
             <button onclick="updateSubscription()">2. Update to Professional</button>
             <button onclick="updateViaAdmin()">3. Alternative Update</button>
         </div>
@@ -105,7 +106,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        subscription_tier: 'pro_500'
+                        subscription_tier: 'pro'
                     })
                 });
                 
@@ -142,7 +143,7 @@
                     },
                     body: JSON.stringify({
                         email: 'corey.osmond99@gmail.com',
-                        subscription_tier: 'pro_500'
+                        subscription_tier: 'pro'
                     })
                 });
                 
@@ -187,6 +188,49 @@
                 } else {
                     resultDiv.className = 'error';
                     resultDiv.innerHTML = `❌ Debug Failed: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `❌ Network Error: ${error.message}`;
+            }
+        }
+        
+        async function testAllowedValues() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing which subscription values are allowed...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/debug/test-subscription-values/corey.osmond99@gmail.com`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'success';
+                    
+                    const allowedValues = [];
+                    const disallowedValues = [];
+                    
+                    for (const [value, result] of Object.entries(data.test_results)) {
+                        if (result.allowed) {
+                            allowedValues.push(value);
+                        } else {
+                            disallowedValues.push(`${value}: ${result.error}`);
+                        }
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <h3>🧪 Subscription Value Test Results</h3>
+                        <p><strong>✅ Allowed Values:</strong></p>
+                        <div style="background: #065f46; padding: 10px; margin: 5px 0; border-radius: 4px;">
+                            ${allowedValues.join(', ') || 'None found'}
+                        </div>
+                        <p><strong>❌ Disallowed Values:</strong></p>
+                        <div style="background: #7f1d1d; padding: 10px; margin: 5px 0; border-radius: 4px; font-size: 12px;">
+                            ${disallowedValues.join('<br>') || 'None'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `❌ Test Failed: ${data.error}`;
                 }
             } catch (error) {
                 resultDiv.className = 'error';
