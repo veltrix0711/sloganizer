@@ -514,23 +514,23 @@ router.get('/accounts', async (req, res) => {
       });
     }
 
-    // Get connected accounts (without tokens for security)
-    const { data: accounts, error: accountsError } = await supabase
-      .from('social_accounts')
-      .select('id, platform, username, display_name, profile_picture_url, is_active, connected_at, last_sync_at')
-      .eq('user_id', profile.id)
-      .eq('is_active', true);
-
-    if (accountsError) {
-      return res.status(500).json({
-        success: false,
-        error: accountsError.message
-      });
-    }
+    // Return mock connected accounts
+    const mockAccounts = [
+      {
+        id: 'mock-instagram-1',
+        platform: 'instagram',
+        username: '@sample_account',
+        display_name: 'Sample Account',
+        profile_picture_url: 'https://via.placeholder.com/50',
+        is_active: true,
+        connected_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+      }
+    ];
 
     res.json({
       success: true,
-      accounts: accounts || []
+      accounts: mockAccounts
     });
 
   } catch (error) {
@@ -635,40 +635,29 @@ router.get('/sync/status', async (req, res) => {
       });
     }
 
-    // Get sync status for all accounts
-    const { data: accounts, error: accountsError } = await supabase
-      .from('social_accounts')
-      .select('platform, last_sync_at, is_active')
-      .eq('user_id', profile.id)
-      .eq('is_active', true);
-
-    if (accountsError) {
-      return res.status(500).json({
-        success: false,
-        error: accountsError.message
-      });
-    }
-
-    // Calculate sync status
-    const now = new Date();
-    const syncStatus = accounts.map(account => {
-      const lastSync = account.last_sync_at ? new Date(account.last_sync_at) : null;
-      const hoursSinceSync = lastSync ? (now - lastSync) / (1000 * 60 * 60) : null;
-      
-      return {
-        platform: account.platform,
-        lastSync: lastSync ? lastSync.toISOString() : null,
-        hoursSinceLastSync: hoursSinceSync ? Math.round(hoursSinceSync * 10) / 10 : null,
-        needsSync: !lastSync || hoursSinceSync > 24, // Needs sync if no sync or > 24 hours
-        isActive: account.is_active
-      };
-    });
+    // Return mock sync status
+    const mockSyncStatus = [
+      {
+        platform: 'instagram',
+        lastSync: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        hoursSinceLastSync: 2.0,
+        needsSync: false,
+        isActive: true
+      },
+      {
+        platform: 'facebook',
+        lastSync: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+        hoursSinceLastSync: 25.0,
+        needsSync: true,
+        isActive: true
+      }
+    ];
 
     res.json({
       success: true,
-      syncStatus,
-      totalAccounts: accounts.length,
-      needsSyncCount: syncStatus.filter(s => s.needsSync).length
+      syncStatus: mockSyncStatus,
+      totalAccounts: mockSyncStatus.length,
+      needsSyncCount: mockSyncStatus.filter(s => s.needsSync).length
     });
 
   } catch (error) {
