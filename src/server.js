@@ -87,6 +87,63 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is running!' });
 });
 
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    ok: true, 
+    timestamp: new Date().toISOString(),
+    routes: ['billing', 'payments', 'social-media', 'favorites/stats']
+  });
+});
+
+// Admin route to check/update user subscription (temporary)
+app.post('/api/admin/update-subscription', async (req, res) => {
+  try {
+    const { email, subscription_tier } = req.body;
+    
+    if (!email || !subscription_tier) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and subscription_tier required'
+      });
+    }
+
+    // Update user subscription in profiles table
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ 
+        subscription_tier,
+        subscription_status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .eq('email', email)
+      .select();
+
+    if (error) {
+      console.error('Error updating subscription:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    console.log('Updated subscription for:', email, 'to:', subscription_tier);
+    
+    res.json({
+      success: true,
+      updated: data,
+      message: `Updated ${email} to ${subscription_tier}`
+    });
+
+  } catch (error) {
+    console.error('Admin update error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Favorites stats route (placeholder)
 app.get('/api/favorites/stats/summary', async (req, res) => {
   try {
