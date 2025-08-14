@@ -52,11 +52,12 @@ const GeneratorPage = () => {
 
   const loadBrandProfiles = async () => {
     try {
-      const response = await fetch('/api/brand/profiles', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
+      if (!user?.email) {
+        console.log('No user email available for loading brand profiles');
+        return;
+      }
+
+      const response = await fetch(`/api/brand/profiles?email=${encodeURIComponent(user.email)}`)
       
       if (response.ok) {
         const data = await response.json()
