@@ -201,11 +201,14 @@ export const AuthProvider = ({ children }) => {
         id: userId,
         email: userData.user?.email || '',
         first_name: userData.user?.user_metadata?.first_name || '',
-        last_name: userData.user?.user_metadata?.last_name || '',
-        // Preserve existing subscription data if profile exists
-        subscription_plan: existingProfile?.subscription_plan || 'free',
-        subscription_status: existingProfile?.subscription_status || 'active',
-        slogans_remaining: existingProfile?.slogans_remaining || 3
+        last_name: userData.user?.user_metadata?.last_name || ''
+      }
+
+      // Only add subscription fields if no existing profile found
+      if (!existingProfile) {
+        profileData.subscription_plan = 'free'
+        profileData.subscription_status = 'active'
+        profileData.slogans_remaining = 3
       }
 
       console.log('AuthContext: Profile data to insert/update:', profileData)

@@ -36,22 +36,55 @@ const Navbar = () => {
     return location.pathname === path
   }
 
-  const navigationItems = [
-    { name: 'Home', href: '/', public: true },
+  // Get user's subscription tier for navigation customization
+  const getUserTier = () => {
+    if (!profile) return 'free'
+    const plan = profile.subscription_plan
+    if (plan === 'agency' || plan === 'premium') return 'enterprise'
+    if (plan === 'pro' || plan === 'pro_500' || plan === 'pro-500') return 'pro'
+    return 'free'
+  }
+
+  const userTier = getUserTier()
+
+  // Core navigation - always visible
+  const coreNavigation = [
     { name: 'Generate', href: '/generate', public: true },
     { name: 'Templates', href: '/templates', public: true },
-    { name: 'Pricing', href: '/pricing', public: true },
-    { name: 'Dashboard', href: '/dashboard', private: true },
-    { name: 'Analytics', href: '/analytics', private: true },
-    { name: 'Brand Suite', href: '/brand-suite', private: true },
-    { name: 'AI Strategy', href: '/ai-strategy', private: true },
-    { name: 'Social Media', href: '/social-media', private: true },
-    { name: 'Favorites', href: '/favorites', private: true }
+    { name: 'Pricing', href: '/pricing', public: true }
   ]
 
-  const filteredNavItems = navigationItems.filter(item => 
-    item.public || (item.private && user)
-  )
+  // User-specific navigation based on subscription
+  const getPrivateNavigation = () => {
+    const baseItems = [
+      { name: 'Dashboard', href: '/dashboard' }
+    ]
+
+    // Pro and Enterprise features
+    if (userTier === 'pro' || userTier === 'enterprise') {
+      baseItems.push(
+        { name: 'Brand Tools', href: '/brand-suite', icon: Building },
+        { name: 'AI Strategy', href: '/ai-strategy', icon: Brain }
+      )
+    }
+
+    // Enterprise features
+    if (userTier === 'enterprise') {
+      baseItems.push(
+        { name: 'Analytics', href: '/analytics', icon: BarChart3 }
+      )
+    }
+
+    // Always show favorites last
+    baseItems.push({ name: 'Favorites', href: '/favorites', icon: Heart })
+
+    return baseItems
+  }
+
+  // Combine navigation items
+  const allNavigationItems = user 
+    ? [...coreNavigation, ...getPrivateNavigation()]
+    : coreNavigation
 
   return (
     <nav className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50 shadow-2xl shadow-slate-900/50">
@@ -71,17 +104,18 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {filteredNavItems.map((item) => (
+          <div className="hidden md:flex items-center space-x-6">
+            {allNavigationItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-all duration-300 relative group ${
+                className={`text-sm font-medium transition-all duration-300 relative group flex items-center ${
                   isActivePath(item.href)
                     ? 'text-cyan-400'
                     : 'text-slate-300 hover:text-cyan-400'
                 }`}
               >
+                {item.icon && <item.icon className="h-4 w-4 mr-1.5" />}
                 {item.name}
                 {isActivePath(item.href) && (
                   <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full"></div>
@@ -120,50 +154,30 @@ const Navbar = () => {
                       </p>
                     </div>
                     
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
-                    >
-                      <Settings className="h-4 w-4 mr-3" />
-                      Dashboard
-                    </Link>
-                    
-                    <Link
-                      to="/analytics"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
-                    >
-                      <BarChart3 className="h-4 w-4 mr-3" />
-                      Analytics
-                    </Link>
-                    
-                    <Link
-                      to="/brand-suite"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
-                    >
-                      <Building className="h-4 w-4 mr-3" />
-                      Brand Suite
-                    </Link>
-                    
-                    <Link
-                      to="/ai-strategy"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
-                    >
-                      <Brain className="h-4 w-4 mr-3" />
-                      AI Strategy
-                    </Link>
-                    
-                    <Link
-                      to="/favorites"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
-                    >
-                      <Heart className="h-4 w-4 mr-3" />
-                      Favorites
-                    </Link>
+                    {getPrivateNavigation().map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
+                      >
+                        {item.icon ? <item.icon className="h-4 w-4 mr-3" /> : <Settings className="h-4 w-4 mr-3" />}
+                        {item.name}
+                      </Link>
+                    ))}
+
+                    {userTier === 'free' && (
+                      <div className="px-4 py-2 border-t border-slate-600 mt-2">
+                        <p className="text-xs text-slate-400 mb-2">Unlock more tools:</p>
+                        <Link
+                          to="/pricing"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="text-xs text-cyan-400 hover:text-cyan-300 underline"
+                        >
+                          Upgrade to Pro →
+                        </Link>
+                      </div>
+                    )}
                     
                     <Link
                       to="/profile"
@@ -223,17 +237,18 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-slate-700 py-4">
             <div className="flex flex-col space-y-4">
-              {filteredNavItems.map((item) => (
+              {allNavigationItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`text-base font-medium transition-colors duration-200 ${
+                  className={`text-base font-medium transition-colors duration-200 flex items-center ${
                     isActivePath(item.href)
                       ? 'text-cyan-400'
                       : 'text-slate-300 hover:text-cyan-400'
                   }`}
                 >
+                  {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                   {item.name}
                 </Link>
               ))}
@@ -252,33 +267,6 @@ const Navbar = () => {
                   </div>
                   
                   <div className="flex flex-col space-y-3">
-                    <Link
-                      to="/analytics"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
-                    >
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Analytics
-                    </Link>
-                    
-                    <Link
-                      to="/brand-suite"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
-                    >
-                      <Building className="h-4 w-4 mr-2" />
-                      Brand Suite
-                    </Link>
-                    
-                    <Link
-                      to="/ai-strategy"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
-                    >
-                      <Brain className="h-4 w-4 mr-2" />
-                      AI Strategy
-                    </Link>
-                    
                     <Link
                       to="/profile"
                       onClick={() => setIsMenuOpen(false)}
