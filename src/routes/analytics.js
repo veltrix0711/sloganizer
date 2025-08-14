@@ -32,21 +32,22 @@ router.get('/overview', async (req, res) => {
       });
     }
 
-    // Try to get from cache first
-    const cacheResult = await cacheManager.cacheAnalyticsOverview(profile.id, email);
-    
-    if (cacheResult.success) {
-      res.json({
-        success: true,
-        overview: cacheResult.data,
-        cached: cacheResult.fromCache
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: cacheResult.error
-      });
-    }
+    // Return mock analytics overview for now
+    const mockOverview = {
+      totalPosts: 15,
+      totalViews: 2500,
+      totalEngagement: 450,
+      totalReach: 1800,
+      topPlatform: 'Instagram',
+      engagementRate: 18.0,
+      growthRate: 12.5
+    };
+
+    res.json({
+      success: true,
+      overview: mockOverview,
+      cached: false
+    });
 
   } catch (error) {
     console.error('Analytics overview error:', error);
@@ -83,21 +84,26 @@ router.get('/metrics', async (req, res) => {
       });
     }
 
-    // Try to get from cache first
-    const cacheResult = await cacheManager.cacheAnalyticsMetrics(profile.id, platform, days);
-    
-    if (cacheResult.success) {
-      res.json({
-        success: true,
-        metrics: cacheResult.data,
-        cached: cacheResult.fromCache
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: cacheResult.error
-      });
-    }
+    // Return mock analytics metrics for now
+    const mockMetrics = {
+      dailyViews: [100, 120, 90, 150, 180, 200, 170],
+      dailyEngagement: [15, 18, 12, 22, 25, 30, 28],
+      platformBreakdown: {
+        instagram: 45,
+        facebook: 35,
+        twitter: 20
+      },
+      topContent: [
+        { title: 'Sample Post 1', views: 500, engagement: 45 },
+        { title: 'Sample Post 2', views: 350, engagement: 32 }
+      ]
+    };
+
+    res.json({
+      success: true,
+      metrics: mockMetrics,
+      cached: false
+    });
 
   } catch (error) {
     console.error('Analytics metrics error:', error);
@@ -134,21 +140,37 @@ router.get('/top-posts', async (req, res) => {
       });
     }
 
-    // Try to get from cache first
-    const cacheResult = await cacheManager.cacheTopPosts(profile.id, limit, platform);
-    
-    if (cacheResult.success) {
-      res.json({
-        success: true,
-        topPosts: cacheResult.data,
-        cached: cacheResult.fromCache
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: cacheResult.error
-      });
-    }
+    // Return mock top posts for now
+    const mockTopPosts = [
+      {
+        id: '1',
+        content: 'Introducing our new feature! 🚀',
+        platform: 'instagram',
+        views: 1500,
+        likes: 120,
+        shares: 25,
+        comments: 15,
+        engagement_rate: 10.67,
+        created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: '2', 
+        content: 'Behind the scenes at our office',
+        platform: 'facebook',
+        views: 1200,
+        likes: 95,
+        shares: 18,
+        comments: 22,
+        engagement_rate: 11.25,
+        created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+
+    res.json({
+      success: true,
+      topPosts: mockTopPosts.slice(0, parseInt(limit)),
+      cached: false
+    });
 
   } catch (error) {
     console.error('Top posts error:', error);
