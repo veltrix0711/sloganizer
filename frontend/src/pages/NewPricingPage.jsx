@@ -35,7 +35,7 @@ const NewPricingPage = () => {
 
   // Map subscription tiers to plan codes
   const getUserPlanCode = () => {
-    const tier = currentPlan || profile?.subscription_tier
+    const tier = currentPlan || profile?.subscription_plan
     if (!tier) return null
     
     const tierMapping = {
@@ -51,13 +51,13 @@ const NewPricingPage = () => {
   }
 
   const userPlanCode = getUserPlanCode()
-  console.log('User plan code:', userPlanCode, 'from tier:', currentPlan || profile?.subscription_tier)
+  console.log('User plan code:', userPlanCode, 'from tier:', currentPlan || profile?.subscription_plan)
 
   const fetchCurrentSubscription = async () => {
     try {
       // Use profile data first if available for faster loading
-      if (profile?.subscription_tier) {
-        setCurrentPlan(profile.subscription_tier)
+      if (profile?.subscription_plan) {
+        setCurrentPlan(profile.subscription_plan)
         return
       }
       
@@ -69,8 +69,8 @@ const NewPricingPage = () => {
     } catch (error) {
       console.error('Error fetching subscription:', error)
       // Fallback to profile data
-      if (profile?.subscription_tier) {
-        setCurrentPlan(profile.subscription_tier)
+      if (profile?.subscription_plan) {
+        setCurrentPlan(profile.subscription_plan)
       }
     }
   }

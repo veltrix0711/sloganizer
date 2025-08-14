@@ -19,7 +19,8 @@
       "WebFetch(domain:sloganixerbackend-production.up.railway.app)",
       "Bash(start debug-test.html)",
       "Bash(grep:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(start update-subscription.html)"
     ],
     "deny": []
   }
