@@ -1,11 +1,19 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import socialMediaRoutes from './routes/socialMedia.js';
 import paymentsRoutes from './routes/payments.js';
 import billingRoutes from './routes/billing.js';
+import analyticsRoutes from './routes/analytics.js';
+import brandRoutes from './routes/brand.js';
+import voiceTrainingRoutes from './routes/voiceTraining.js';
+import brandAnalysisRoutes from './routes/brandAnalysis.js';
+import favoritesRoutes from './routes/favorites.js';
+import slogansRoutes from './routes/slogans.js';
+import exportRoutes from './routes/export.js';
 import { supabase } from './services/supabase.js';
 
 dotenv.config();
@@ -15,6 +23,18 @@ const PORT = process.env.PORT || 3001;
 
 // Trust proxy for Railway deployment
 app.set('trust proxy', true);
+
+// Performance middleware
+app.use(compression({
+  level: 6,
+  threshold: 1024,
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
 
 // Security middleware
 app.use(helmet());
@@ -32,34 +52,66 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ 
+  limit: '10mb',
+  type: ['application/json', 'text/plain']
+}));
+app.use(express.urlencoded({ 
+  extended: true, 
+  limit: '10mb',
+  parameterLimit: 20
+}));
 
-// Rate limiting
-const limiter = rateLimit({
+// Add cache control headers for static assets
+app.use((req, res, next) => {
+  if (req.method === 'GET' && req.path.includes('/api/')) {
+    // Set cache headers for API responses
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  }
+  next();
+});
+
+// Rate limiting with different tiers
+const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
+  max: 200, // Increased for better UX
+  message: { success: false, error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === '/health' || req.path === '/api/health';
+  }
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 50, // 50 requests per minute for API calls
+  message: { success: false, error: 'API rate limit exceeded, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-app.use('/api/', limiter);
+app.use('/', generalLimiter);
+app.use('/api/', apiLimiter);
 
-// Request logging middleware
+// Request logging middleware (optimized for production)
 app.use('/api/', (req, res, next) => {
   const timestamp = new Date().toISOString();
-  console.log(`📥 [${timestamp}] ${req.method} ${req.path}`);
-  console.log(`    Body: ${JSON.stringify(req.body).substring(0, 200)}`);
-  console.log(`    Query: ${JSON.stringify(req.query)}`);
-  console.log(`    Auth: ${req.headers.authorization ? 'Present' : 'Missing'}`);
+  const isDev = process.env.NODE_ENV !== 'production';
   
-  // Log response
-  const originalSend = res.send;
-  res.send = function(data) {
-    console.log(`📤 [${timestamp}] Response ${res.statusCode}: ${typeof data === 'string' ? data.substring(0, 200) : JSON.stringify(data).substring(0, 200)}`);
-    originalSend.call(this, data);
-  };
+  if (isDev) {
+    console.log(`📥 [${timestamp}] ${req.method} ${req.path}`);
+    console.log(`    Query: ${JSON.stringify(req.query)}`);
+    console.log(`    Auth: ${req.headers.authorization ? 'Present' : 'Missing'}`);
+  } else {
+    // Production: only log important requests
+    if (req.method !== 'GET' || res.statusCode >= 400) {
+      console.log(`[${timestamp}] ${req.method} ${req.path} - ${res.statusCode}`);
+    }
+  }
   
   next();
 });
@@ -82,6 +134,27 @@ app.use('/api/payments', paymentsRoutes);
 // Billing routes
 app.use('/api/billing', billingRoutes);
 
+// Analytics routes
+app.use('/api/analytics', analyticsRoutes);
+
+// Brand routes
+app.use('/api/brand', brandRoutes);
+
+// Voice training routes
+app.use('/api/voice-training', voiceTrainingRoutes);
+
+// Brand analysis routes
+app.use('/api/brand-analysis', brandAnalysisRoutes);
+
+// Favorites routes
+app.use('/api/favorites', favoritesRoutes);
+
+// Slogans routes
+app.use('/api/slogans', slogansRoutes);
+
+// Export routes
+app.use('/api/export', exportRoutes);
+
 // Test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is running!' });
@@ -92,7 +165,7 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     ok: true, 
     timestamp: new Date().toISOString(),
-    routes: ['billing', 'payments', 'social-media', 'favorites/stats'],
+    routes: ['billing', 'payments', 'social-media', 'analytics', 'favorites/stats'],
     supabase_available: !!supabase,
     env_check: {
       supabase_url: !!process.env.SUPABASE_URL,
