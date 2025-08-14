@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sloganizer Admin Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .tool-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+        }
+        .tool-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #f0f8ff;
+        }
+        .tool-description {
+            margin-bottom: 20px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 5px 0;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        .btn-secondary:hover {
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+        .btn-warning:hover {
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #4CAF50; }
+        .status-unknown { background: #FFC107; }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛠️ Sloganizer Admin Dashboard</h1>
+        <p>Complete admin control panel for managing users, subscriptions, and debugging</p>
+        <div id="status">
+            <span class="status-indicator status-unknown"></span>
+            <span id="status-text">Checking backend status...</span>
+        </div>
+    </div>
+
+    <div class="tools-grid">
+        <!-- Subscription Management -->
+        <div class="tool-card">
+            <div class="tool-title">📋 Subscription Manager</div>
+            <div class="tool-description">
+                Manage user subscriptions, change plans, and view subscription history.
+            </div>
+            <button class="btn" onclick="openTool('subscription-manager.html')">
+                Open Subscription Manager
+            </button>
+        </div>
+
+        <!-- User Management -->
+        <div class="tool-card">
+            <div class="tool-title">👥 User Manager</div>
+            <div class="tool-description">
+                View user profiles, edit user data, and manage user accounts.
+            </div>
+            <button class="btn btn-secondary" onclick="openTool('user-manager.html')">
+                Open User Manager
+            </button>
+        </div>
+
+        <!-- Database Tools -->
+        <div class="tool-card">
+            <div class="tool-title">🗄️ Database Tools</div>
+            <div class="tool-description">
+                Debug database queries, test table constraints, and analyze data.
+            </div>
+            <button class="btn btn-warning" onclick="openTool('database-tools.html')">
+                Open Database Tools
+            </button>
+        </div>
+
+        <!-- API Testing -->
+        <div class="tool-card">
+            <div class="tool-title">🔌 API Tester</div>
+            <div class="tool-description">
+                Test API endpoints, check responses, and debug API issues.
+            </div>
+            <button class="btn" onclick="openTool('api-tester.html')">
+                Open API Tester
+            </button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="tool-card">
+            <div class="tool-title">⚡ Quick Actions</div>
+            <div class="tool-description">
+                Common admin tasks and shortcuts for frequent operations.
+            </div>
+            <button class="btn btn-secondary" onclick="checkBackendHealth()">
+                Check Backend Health
+            </button>
+            <button class="btn" onclick="openApp()">
+                Open Main App
+            </button>
+            <button class="btn btn-warning" onclick="openBackendLogs()">
+                View Backend Logs
+            </button>
+        </div>
+
+        <!-- System Info -->
+        <div class="tool-card">
+            <div class="tool-title">📊 System Info</div>
+            <div class="tool-description">
+                View system status, deployment info, and environment details.
+            </div>
+            <div id="system-info">
+                <p><strong>Environment:</strong> Production</p>
+                <p><strong>Backend:</strong> <span id="backend-url">Loading...</span></p>
+                <p><strong>Frontend:</strong> <span id="frontend-url">Loading...</span></p>
+            </div>
+            <button class="btn btn-secondary" onclick="refreshSystemInfo()">
+                Refresh System Info
+            </button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Sloganizer Admin UI • Built with ❤️ by Claude Code</p>
+    </div>
+
+    <script>
+        // Load environment variables
+        const API_BASE = 'https://sloganixerbackend-production.up.railway.app/api';
+        const FRONTEND_URL = 'https://sloganizer-frontend-production.up.railway.app';
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendHealth();
+            updateSystemInfo();
+        });
+
+        function openTool(filename) {
+            window.open(filename, '_blank');
+        }
+
+        function openApp() {
+            window.open(FRONTEND_URL, '_blank');
+        }
+
+        function openBackendLogs() {
+            window.open('https://railway.com/project/c9cd5409-96ae-47f2-8d4d-8456843c65a9', '_blank');
+        }
+
+        async function checkBackendHealth() {
+            const statusIndicator = document.querySelector('.status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            try {
+                statusText.textContent = 'Checking...';
+                statusIndicator.className = 'status-indicator status-unknown';
+                
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    statusText.textContent = 'Backend Online ✅';
+                } else {
+                    throw new Error('Backend not OK');
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-unknown';
+                statusText.textContent = 'Backend Error ❌';
+            }
+        }
+
+        function updateSystemInfo() {
+            document.getElementById('backend-url').textContent = API_BASE;
+            document.getElementById('frontend-url').textContent = FRONTEND_URL;
+        }
+
+        function refreshSystemInfo() {
+            updateSystemInfo();
+            checkBackendHealth();
+        }
+    </script>
+</body>
+</html>

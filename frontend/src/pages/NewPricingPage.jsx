@@ -20,25 +20,58 @@ import api from '../services/api'
 import toast from 'react-hot-toast'
 
 const NewPricingPage = () => {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [loading, setLoading] = useState(null)
   const [currentPlan, setCurrentPlan] = useState(null)
-  const [selectedProTier, setSelectedProTier] = useState('PRO_50')
+  const [selectedProTier, setSelectedProTier] = useState('PRO_500')
 
   useEffect(() => {
     if (user) {
       fetchCurrentSubscription()
+    } else {
+      setCurrentPlan(null)
     }
-  }, [user])
+  }, [user, profile])
+
+  // Map subscription tiers to plan codes
+  const getUserPlanCode = () => {
+    const tier = currentPlan || profile?.subscription_plan
+    if (!tier) return null
+    
+    const tierMapping = {
+      'free': 'STARTER',
+      'pro': 'PRO_500',
+      'pro_500': 'PRO_500', 
+      'pro-500': 'PRO_500',
+      'agency': 'AGENCY',
+      'premium': 'AGENCY'
+    }
+    
+    return tierMapping[tier.toLowerCase()] || null
+  }
+
+  const userPlanCode = getUserPlanCode()
+  console.log('User plan code:', userPlanCode, 'from tier:', currentPlan || profile?.subscription_plan)
 
   const fetchCurrentSubscription = async () => {
     try {
-      const response = await api.get('/billing/subscription')
-      if (response.data.success && response.data.subscription) {
-        setCurrentPlan(response.data.subscription.plan_code)
+      // Use profile data first if available for faster loading
+      if (profile?.subscription_plan) {
+        setCurrentPlan(profile.subscription_plan)
+        return
+      }
+      
+      const response = await api.getSubscriptionStatus()
+      if (response.success && response.subscription) {
+        console.log('Subscription response:', response.subscription)
+        setCurrentPlan(response.subscription.tier || response.subscription.plan)
       }
     } catch (error) {
       console.error('Error fetching subscription:', error)
+      // Fallback to profile data
+      if (profile?.subscription_plan) {
+        setCurrentPlan(profile.subscription_plan)
+      }
     }
   }
 
@@ -182,11 +215,11 @@ const NewPricingPage = () => {
           
           {/* Starter Plan */}
           <div className="card-primary group hover:shadow-glow-blue">
-            {/* Coming Soon Badge */}
-            {currentPlan === 'STARTER' && (
+            {/* Current Plan Badge */}
+            {userPlanCode === 'STARTER' && (
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="badge-primary shadow-glow-blue">
-                  Current Plan
+                <span className="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  ✓ Current Plan
                 </span>
               </div>
             )}
@@ -243,13 +276,22 @@ const NewPricingPage = () => {
             {/* CTA Button */}
             <button
               onClick={() => handlePlanSelect(plans.starter.code)}
-              disabled={loading === plans.starter.code}
-              className="btn-primary w-full group"
+              disabled={loading === plans.starter.code || userPlanCode === 'STARTER'}
+              className={`w-full group py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 ${
+                userPlanCode === 'STARTER'
+                  ? 'bg-green-600 cursor-default'
+                  : 'bg-gradient-to-r from-cyan-500 to-purple-600 hover:scale-105 shadow-lg'
+              }`}
             >
               {loading === plans.starter.code ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Starting trial...
+                </div>
+              ) : userPlanCode === 'STARTER' ? (
+                <div className="flex items-center justify-center">
+                  <Check className="h-5 w-5 mr-2" />
+                  Current Plan
                 </div>
               ) : (
                 <>
@@ -265,12 +307,18 @@ const NewPricingPage = () => {
           </div>
 
           {/* Pro Plan (with slider) */}
-          <div className="card-primary group hover:shadow-glow-teal relative transform lg:scale-105">
-            {/* Most Popular Badge */}
+          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 group hover:border-cyan-500/50 relative transform lg:scale-105 transition-all duration-500">
+            {/* Most Popular or Current Plan Badge */}
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <span className="bg-grad-quantum text-white px-6 py-2 rounded-full text-sm font-bold shadow-glow-orange">
-                🚀 Most Popular
-              </span>
+              {userPlanCode === 'PRO_500' || userPlanCode === 'PRO_50' || userPlanCode === 'PRO_200' ? (
+                <span className="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  ✓ Current Plan
+                </span>
+              ) : (
+                <span className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  🚀 Most Popular
+                </span>
+              )}
             </div>
             
             <div className="text-center mb-8">
@@ -381,13 +429,22 @@ const NewPricingPage = () => {
             {/* CTA Button */}
             <button
               onClick={() => handlePlanSelect(selectedProTier)}
-              disabled={loading === selectedProTier}
-              className="btn-accent w-full group"
+              disabled={loading === selectedProTier || (userPlanCode === 'PRO_500' || userPlanCode === 'PRO_50' || userPlanCode === 'PRO_200')}
+              className={`w-full group py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 ${
+                userPlanCode === 'PRO_500' || userPlanCode === 'PRO_50' || userPlanCode === 'PRO_200'
+                  ? 'bg-green-600 cursor-default'
+                  : 'bg-gradient-to-r from-cyan-500 to-purple-600 hover:scale-105 shadow-lg'
+              }`}
             >
               {loading === selectedProTier ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Redirecting...
+                </div>
+              ) : (userPlanCode === 'PRO_500' || userPlanCode === 'PRO_50' || userPlanCode === 'PRO_200') ? (
+                <div className="flex items-center justify-center">
+                  <Check className="h-5 w-5 mr-2" />
+                  Current Plan
                 </div>
               ) : (
                 <>
@@ -399,7 +456,15 @@ const NewPricingPage = () => {
           </div>
 
           {/* Agency Plan */}
-          <div className="card-primary group hover:shadow-glow-orange">
+          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 group hover:border-orange-500/50 transition-all duration-500 relative">
+            {/* Current Plan Badge for Agency */}
+            {userPlanCode === 'AGENCY' && (
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  ✓ Current Plan
+                </span>
+              </div>
+            )}
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-grad-heat rounded-xl flex items-center justify-center mx-auto mb-6 shadow-glow-orange">
                 <Crown className="h-8 w-8 text-white" />
@@ -454,13 +519,23 @@ const NewPricingPage = () => {
             </div>
             
             {/* CTA Button */}
-            <Link
-              to="/contact-sales"
-              className="btn-secondary w-full group flex items-center justify-center"
-            >
-              Contact Sales
-              <Users className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform" />
-            </Link>
+            {userPlanCode === 'AGENCY' ? (
+              <button
+                disabled
+                className="w-full py-4 px-6 rounded-xl font-bold text-white bg-green-600 cursor-default flex items-center justify-center"
+              >
+                <Check className="h-5 w-5 mr-2" />
+                Current Plan
+              </button>
+            ) : (
+              <Link
+                to="/contact-sales"
+                className="w-full py-4 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:scale-105 shadow-lg transition-all duration-300 group flex items-center justify-center"
+              >
+                Contact Sales
+                <Users className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform" />
+              </Link>
+            )}
           </div>
         </div>
 

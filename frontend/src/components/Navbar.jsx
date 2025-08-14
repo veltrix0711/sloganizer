@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Rocket, User, LogOut, Heart, Settings, Building } from 'lucide-react'
+import { Menu, X, Rocket, User, LogOut, Heart, Settings, Building, BarChart3, Brain } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 
 const Navbar = () => {
@@ -11,9 +11,25 @@ const Navbar = () => {
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
-    await signOut()
-    setIsUserMenuOpen(false)
-    navigate('/')
+    try {
+      console.log('Signing out...')
+      setIsUserMenuOpen(false)
+      const result = await signOut()
+      console.log('Sign out result:', result)
+      
+      // Force navigation to home
+      navigate('/', { replace: true })
+      
+      // Force page reload if needed to clear all state
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 100)
+    } catch (error) {
+      console.error('Sign out error:', error)
+      setIsUserMenuOpen(false)
+      // Still navigate home even if sign out fails
+      navigate('/', { replace: true })
+    }
   }
 
   const isActivePath = (path) => {
@@ -23,9 +39,12 @@ const Navbar = () => {
   const navigationItems = [
     { name: 'Home', href: '/', public: true },
     { name: 'Generate', href: '/generate', public: true },
+    { name: 'Templates', href: '/templates', public: true },
     { name: 'Pricing', href: '/pricing', public: true },
     { name: 'Dashboard', href: '/dashboard', private: true },
+    { name: 'Analytics', href: '/analytics', private: true },
     { name: 'Brand Suite', href: '/brand-suite', private: true },
+    { name: 'AI Strategy', href: '/ai-strategy', private: true },
     { name: 'Social Media', href: '/social-media', private: true },
     { name: 'Favorites', href: '/favorites', private: true }
   ]
@@ -95,7 +114,9 @@ const Navbar = () => {
                         {user.email}
                       </p>
                       <p className="text-xs text-slate-400 capitalize">
-                        {profile?.subscription_tier || 'free'} plan
+                        {(profile?.subscription_plan === 'pro' || profile?.subscription_plan === 'pro_500' || profile?.subscription_plan === 'pro-500') ? 'Professional' : 
+                         (profile?.subscription_plan === 'agency' || profile?.subscription_plan === 'premium') ? 'Enterprise' : 
+                         'Starter'} plan
                       </p>
                     </div>
                     
@@ -109,12 +130,30 @@ const Navbar = () => {
                     </Link>
                     
                     <Link
+                      to="/analytics"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-3" />
+                      Analytics
+                    </Link>
+                    
+                    <Link
                       to="/brand-suite"
                       onClick={() => setIsUserMenuOpen(false)}
                       className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
                     >
                       <Building className="h-4 w-4 mr-3" />
                       Brand Suite
+                    </Link>
+                    
+                    <Link
+                      to="/ai-strategy"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50 transition-all duration-200"
+                    >
+                      <Brain className="h-4 w-4 mr-3" />
+                      AI Strategy
                     </Link>
                     
                     <Link
@@ -206,11 +245,22 @@ const Navbar = () => {
                       {user.email}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">
-                      {profile?.subscription_tier || 'free'} plan
+                      {(profile?.subscription_plan === 'pro' || profile?.subscription_plan === 'pro_500' || profile?.subscription_plan === 'pro-500') ? 'Professional' : 
+                       (profile?.subscription_plan === 'agency' || profile?.subscription_plan === 'premium') ? 'Enterprise' : 
+                       'Starter'} plan
                     </p>
                   </div>
                   
                   <div className="flex flex-col space-y-3">
+                    <Link
+                      to="/analytics"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Analytics
+                    </Link>
+                    
                     <Link
                       to="/brand-suite"
                       onClick={() => setIsMenuOpen(false)}
@@ -218,6 +268,15 @@ const Navbar = () => {
                     >
                       <Building className="h-4 w-4 mr-2" />
                       Brand Suite
+                    </Link>
+                    
+                    <Link
+                      to="/ai-strategy"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200"
+                    >
+                      <Brain className="h-4 w-4 mr-2" />
+                      AI Strategy
                     </Link>
                     
                     <Link

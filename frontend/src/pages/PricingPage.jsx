@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 
 const PricingPage = () => {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [loading, setLoading] = useState(null)
 
   // Handle Stripe redirect
@@ -28,14 +28,40 @@ const PricingPage = () => {
     }
   }
 
+  // Check if user is subscribed to a plan
+  const isSubscribedToPlan = (planName) => {
+    if (!profile || !profile.subscription_tier) return false
+    const currentPlan = profile.subscription_tier.toLowerCase()
+    const checkPlan = planName.toLowerCase()
+    
+    console.log('Checking subscription for plan:', planName, 'Current tier:', profile.subscription_tier)
+    
+    // Map plan names to subscription tiers
+    const planMapping = {
+      'starter': ['free'],
+      'professional': ['pro', 'pro_500', 'pro-500'], 
+      'enterprise': ['agency', 'premium']
+    }
+    
+    const allowedTiers = planMapping[checkPlan] || [checkPlan]
+    const isSubscribed = allowedTiers.includes(currentPlan)
+    console.log('Is subscribed to', planName, ':', isSubscribed)
+    return isSubscribed
+  }
+
   // Handle subscription plan selection
   const handlePlanSelect = async (planName) => {
-    if (planName === 'Free') {
+    if (planName === 'Starter') {
       if (user) {
         navigate('/dashboard')
       } else {
         navigate('/signup')
       }
+      return
+    }
+
+    // If user is already subscribed to this plan, do nothing
+    if (isSubscribedToPlan(planName)) {
       return
     }
 
@@ -54,8 +80,12 @@ const PricingPage = () => {
       const plansResponse = await api.getSubscriptionPlans()
       console.log('Available plans from backend:', plansResponse.plans)
       
-      // Match by plan ID instead of name (Pro -> pro, Agency -> agency)
-      const planId = planName.toLowerCase()
+      // Match by plan ID instead of name (Professional -> pro, Enterprise -> agency)
+      const planMapping = {
+        'professional': 'pro',
+        'enterprise': 'agency'
+      }
+      const planId = planMapping[planName.toLowerCase()] || planName.toLowerCase()
       const selectedPlan = plansResponse.plans.find(plan => 
         plan.id === planId
       )
@@ -259,17 +289,26 @@ const PricingPage = () => {
                 {/* CTA Button */}
                 <button
                   onClick={() => handlePlanSelect(plan.name)}
-                  disabled={loading === plan.name}
+                  disabled={loading === plan.name || isSubscribedToPlan(plan.name)}
                   className={`w-full py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 ${
-                    plan.popular
+                    isSubscribedToPlan(plan.name)
+                      ? 'bg-green-600 shadow-lg shadow-green-500/25'
+                      : plan.popular
                       ? `bg-gradient-to-r ${plan.gradient} shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-105`
                       : `bg-gradient-to-r ${plan.gradient} shadow-lg hover:shadow-xl hover:scale-105`
-                  } ${loading === plan.name ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${loading === plan.name ? 'opacity-50 cursor-not-allowed' : ''} ${
+                    isSubscribedToPlan(plan.name) ? 'cursor-default' : ''
+                  }`}
                 >
                   {loading === plan.name ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Launching...
+                    </div>
+                  ) : isSubscribedToPlan(plan.name) ? (
+                    <div className="flex items-center justify-center">
+                      <Check className="h-5 w-5 mr-2" />
+                      Current Plan
                     </div>
                   ) : (
                     plan.cta

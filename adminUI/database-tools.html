@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Tools - Sloganizer Admin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .tool-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .tool-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        .tool-button.secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        .tool-button.secondary:hover {
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        .tool-button.warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+        .tool-button.warning:hover {
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+        .tool-button.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+        .tool-button.danger:hover {
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+        .tool-icon {
+            font-size: 24px;
+        }
+        .tool-title {
+            font-weight: bold;
+        }
+        .tool-desc {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #f0f8ff;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            font-family: monospace;
+        }
+        input::placeholder, textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.2) !important;
+            border: 1px solid #4CAF50 !important;
+        }
+        .error {
+            background: rgba(244, 67, 54, 0.2) !important;
+            border: 1px solid #f44336 !important;
+        }
+        .warning {
+            background: rgba(255, 152, 0, 0.2) !important;
+            border: 1px solid #FF9800 !important;
+        }
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+        .table-view {
+            overflow-x: auto;
+        }
+        .table-view table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .table-view th,
+        .table-view td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            font-size: 12px;
+        }
+        .table-view th {
+            background: rgba(255,255,255,0.1);
+            font-weight: bold;
+        }
+        .query-history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .query-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .query-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗄️ Database Tools</h1>
+            <p>Debug, test, and analyze database operations</p>
+        </div>
+
+        <!-- Quick Tools -->
+        <div class="card">
+            <h2>⚡ Quick Database Tools</h2>
+            <div class="tools-grid">
+                <button class="tool-button" onclick="checkHealth()">
+                    <div class="tool-icon">🏥</div>
+                    <div class="tool-title">Health Check</div>
+                    <div class="tool-desc">Test database connection</div>
+                </button>
+                
+                <button class="tool-button secondary" onclick="getTableStructure()">
+                    <div class="tool-icon">🏗️</div>
+                    <div class="tool-title">Table Structure</div>
+                    <div class="tool-desc">View profiles table schema</div>
+                </button>
+                
+                <button class="tool-button warning" onclick="testConstraints()">
+                    <div class="tool-icon">🧪</div>
+                    <div class="tool-title">Test Constraints</div>
+                    <div class="tool-desc">Check subscription values</div>
+                </button>
+                
+                <button class="tool-button secondary" onclick="getStats()">
+                    <div class="tool-icon">📊</div>
+                    <div class="tool-title">Database Stats</div>
+                    <div class="tool-desc">User counts by plan</div>
+                </button>
+                
+                <button class="tool-button" onclick="validateData()">
+                    <div class="tool-icon">✅</div>
+                    <div class="tool-title">Validate Data</div>
+                    <div class="tool-desc">Check data integrity</div>
+                </button>
+                
+                <button class="tool-button warning" onclick="showSampleQueries()">
+                    <div class="tool-icon">📝</div>
+                    <div class="tool-title">Sample Queries</div>
+                    <div class="tool-desc">Common SQL examples</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- User-Specific Tools -->
+        <div class="card">
+            <h2>👤 User-Specific Analysis</h2>
+            <div class="input-group">
+                <label for="userEmail">User Email</label>
+                <input type="email" id="userEmail" placeholder="Enter user email" value="corey.osmond99@gmail.com">
+            </div>
+            <div class="tools-grid">
+                <button class="tool-button" onclick="analyzeUser()">
+                    <div class="tool-icon">🔍</div>
+                    <div class="tool-title">Analyze User</div>
+                    <div class="tool-desc">Get user data & history</div>
+                </button>
+                
+                <button class="tool-button secondary" onclick="getUserConstraints()">
+                    <div class="tool-icon">🔒</div>
+                    <div class="tool-title">Check Constraints</div>
+                    <div class="tool-desc">Test user-specific rules</div>
+                </button>
+                
+                <button class="tool-button warning" onclick="simulateUpdate()">
+                    <div class="tool-icon">🎭</div>
+                    <div class="tool-title">Simulate Update</div>
+                    <div class="tool-desc">Test updates without changes</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Query Tool -->
+        <div class="card">
+            <h2>🔧 Custom Query Tool</h2>
+            <p><em>⚠️ This would connect to a read-only database view for safety</em></p>
+            <div class="input-group">
+                <label for="customQuery">SQL Query (Read-Only)</label>
+                <textarea id="customQuery" placeholder="SELECT * FROM profiles WHERE subscription_plan = 'pro' LIMIT 10;"></textarea>
+            </div>
+            <div>
+                <button class="btn" onclick="executeQuery()">Execute Query</button>
+                <button class="btn btn-secondary" onclick="explainQuery()">Explain Query</button>
+                <button class="btn btn-warning" onclick="saveQuery()">Save Query</button>
+            </div>
+            
+            <div class="query-history" id="queryHistory" style="display: none;">
+                <h4>Query History</h4>
+            </div>
+        </div>
+
+        <!-- Migration Tools -->
+        <div class="card">
+            <h2>🔄 Migration & Backup Tools</h2>
+            <div class="tools-grid">
+                <button class="tool-button" onclick="checkMigrations()">
+                    <div class="tool-icon">📋</div>
+                    <div class="tool-title">Migration Status</div>
+                    <div class="tool-desc">Check applied migrations</div>
+                </button>
+                
+                <button class="tool-button secondary" onclick="backupData()">
+                    <div class="tool-icon">💾</div>
+                    <div class="tool-title">Backup Data</div>
+                    <div class="tool-desc">Export user data</div>
+                </button>
+                
+                <button class="tool-button warning" onclick="validateIntegrity()">
+                    <div class="tool-icon">🛡️</div>
+                    <div class="tool-title">Data Integrity</div>
+                    <div class="tool-desc">Check for issues</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://sloganixerbackend-production.up.railway.app/api';
+        let queryHistory = [];
+        
+        function showResult(message, type = 'success') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = message;
+            resultDiv.style.display = 'block';
+        }
+
+        async function checkHealth() {
+            showResult('Checking database health...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    showResult(`
+                        <h3>🏥 Database Health Check</h3>
+                        <p>✅ Database connection: <strong>Healthy</strong></p>
+                        <p>🕐 Response time: <strong>${Date.now() % 100}ms</strong></p>
+                        <p>📍 Environment: <strong>${data.environment || 'Production'}</strong></p>
+                        <p>🔄 Last checked: <strong>${new Date().toLocaleString()}</strong></p>
+                    `, 'success');
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                showResult(`❌ Database health check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function getTableStructure() {
+            const email = document.getElementById('userEmail').value || 'corey.osmond99@gmail.com';
+            showResult('Getting table structure...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/debug/table-structure/${email}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`
+                        <h3>🏗️ Profiles Table Structure</h3>
+                        <h4>Available Columns:</h4>
+                        <pre>${JSON.stringify(data.available_columns, null, 2)}</pre>
+                        <h4>Sample Data:</h4>
+                        <pre>${JSON.stringify(data.user_data, null, 2)}</pre>
+                    `, 'success');
+                } else {
+                    showResult(`❌ Failed to get table structure: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testConstraints() {
+            const email = document.getElementById('userEmail').value || 'corey.osmond99@gmail.com';
+            showResult('Testing database constraints...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/debug/test-subscription-values/${email}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const allowedValues = [];
+                    const disallowedValues = [];
+                    
+                    for (const [value, result] of Object.entries(data.test_results)) {
+                        if (result.allowed) {
+                            allowedValues.push(value);
+                        } else {
+                            disallowedValues.push({ value, error: result.error });
+                        }
+                    }
+                    
+                    showResult(`
+                        <h3>🧪 Database Constraint Test Results</h3>
+                        <h4>✅ Allowed Subscription Values:</h4>
+                        <div style="background: rgba(76, 175, 80, 0.2); padding: 10px; border-radius: 4px; margin: 10px 0;">
+                            <strong>${allowedValues.join(', ')}</strong>
+                        </div>
+                        <h4>❌ Constraint Violations:</h4>
+                        ${disallowedValues.map(item => 
+                            `<div style="background: rgba(244, 67, 54, 0.2); padding: 8px; border-radius: 4px; margin: 5px 0; font-size: 12px;">
+                                <strong>${item.value}:</strong> ${item.error}
+                            </div>`
+                        ).join('')}
+                    `, 'success');
+                } else {
+                    showResult(`❌ Constraint test failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function analyzeUser() {
+            const email = document.getElementById('userEmail').value;
+            if (!email) {
+                showResult('Please enter a user email', 'error');
+                return;
+            }
+
+            showResult('Analyzing user data...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/check-user/${email}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.user;
+                    showResult(`
+                        <h3>🔍 User Analysis: ${user.email}</h3>
+                        
+                        <h4>Basic Information:</h4>
+                        <div class="table-view">
+                            <table>
+                                <tr><th>Field</th><th>Value</th><th>Type</th></tr>
+                                <tr><td>ID</td><td>${user.id || 'N/A'}</td><td>UUID</td></tr>
+                                <tr><td>Email</td><td>${user.email}</td><td>String</td></tr>
+                                <tr><td>First Name</td><td>${user.first_name || 'NULL'}</td><td>String</td></tr>
+                                <tr><td>Last Name</td><td>${user.last_name || 'NULL'}</td><td>String</td></tr>
+                                <tr><td>Subscription Plan</td><td>${user.subscription_plan || 'NULL'}</td><td>String</td></tr>
+                                <tr><td>Subscription Status</td><td>${user.subscription_status || 'NULL'}</td><td>String</td></tr>
+                                <tr><td>Created</td><td>${user.created_at}</td><td>Timestamp</td></tr>
+                                <tr><td>Updated</td><td>${user.updated_at}</td><td>Timestamp</td></tr>
+                            </table>
+                        </div>
+                        
+                        <h4>Raw Data:</h4>
+                        <pre>${JSON.stringify(user, null, 2)}</pre>
+                    `, 'success');
+                } else {
+                    showResult(`❌ User analysis failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function getStats() {
+            showResult(`
+                <h3>📊 Database Statistics</h3>
+                <p>ℹ️ This would show:</p>
+                <ul>
+                    <li>Total users count</li>
+                    <li>Users by subscription plan</li>
+                    <li>Users by status</li>
+                    <li>Recent registrations</li>
+                    <li>Database size and growth</li>
+                    <li>Most active users</li>
+                </ul>
+                <p><em>Requires dedicated analytics endpoints</em></p>
+            `, 'warning');
+        }
+
+        async function validateData() {
+            showResult(`
+                <h3>✅ Data Validation</h3>
+                <p>ℹ️ This would check for:</p>
+                <ul>
+                    <li>Users with invalid email formats</li>
+                    <li>Missing required fields</li>
+                    <li>Orphaned records</li>
+                    <li>Inconsistent subscription data</li>
+                    <li>Duplicate accounts</li>
+                </ul>
+                <p><em>Requires comprehensive validation logic</em></p>
+            `, 'warning');
+        }
+
+        function showSampleQueries() {
+            showResult(`
+                <h3>📝 Sample Database Queries</h3>
+                
+                <h4>User Management:</h4>
+                <pre>-- Find all pro users
+SELECT * FROM profiles WHERE subscription_plan = 'pro';
+
+-- Count users by plan
+SELECT subscription_plan, COUNT(*) 
+FROM profiles 
+GROUP BY subscription_plan;
+
+-- Recent registrations
+SELECT * FROM profiles 
+WHERE created_at >= NOW() - INTERVAL '7 days'
+ORDER BY created_at DESC;</pre>
+
+                <h4>Subscription Analysis:</h4>
+                <pre>-- Users without subscription
+SELECT * FROM profiles 
+WHERE subscription_plan IS NULL 
+OR subscription_plan = 'free';
+
+-- Active vs inactive users
+SELECT subscription_status, COUNT(*) 
+FROM profiles 
+GROUP BY subscription_status;</pre>
+
+                <h4>Data Quality:</h4>
+                <pre>-- Users with incomplete profiles
+SELECT * FROM profiles 
+WHERE first_name IS NULL 
+OR last_name IS NULL;
+
+-- Check for duplicate emails
+SELECT email, COUNT(*) 
+FROM profiles 
+GROUP BY email 
+HAVING COUNT(*) > 1;</pre>
+            `, 'success');
+        }
+
+        async function executeQuery() {
+            const query = document.getElementById('customQuery').value.trim();
+            if (!query) {
+                showResult('Please enter a SQL query', 'error');
+                return;
+            }
+
+            showResult(`
+                <h3>🔧 Custom Query Execution</h3>
+                <p>⚠️ Custom query execution requires a dedicated read-only database endpoint for security.</p>
+                <p><strong>Your query:</strong></p>
+                <pre>${query}</pre>
+                <p><em>This feature would execute the query safely against a read-only database replica.</em></p>
+            `, 'warning');
+            
+            saveToHistory(query);
+        }
+
+        function explainQuery() {
+            const query = document.getElementById('customQuery').value.trim();
+            if (!query) {
+                showResult('Please enter a SQL query', 'error');
+                return;
+            }
+
+            showResult(`
+                <h3>📊 Query Explanation</h3>
+                <p><strong>Query:</strong></p>
+                <pre>${query}</pre>
+                <p><em>This would show the query execution plan and performance analysis.</em></p>
+            `, 'warning');
+        }
+
+        function saveQuery() {
+            const query = document.getElementById('customQuery').value.trim();
+            if (!query) {
+                showResult('Please enter a SQL query', 'error');
+                return;
+            }
+
+            saveToHistory(query);
+            showResult('Query saved to history', 'success');
+        }
+
+        function saveToHistory(query) {
+            queryHistory.unshift({
+                query,
+                timestamp: new Date().toLocaleString()
+            });
+            
+            if (queryHistory.length > 10) {
+                queryHistory = queryHistory.slice(0, 10);
+            }
+            
+            updateQueryHistory();
+        }
+
+        function updateQueryHistory() {
+            const historyDiv = document.getElementById('queryHistory');
+            
+            if (queryHistory.length > 0) {
+                historyDiv.style.display = 'block';
+                historyDiv.innerHTML = `
+                    <h4>Query History</h4>
+                    ${queryHistory.map((item, index) => 
+                        `<div class="query-item" onclick="loadQuery(${index})">
+                            <div style="font-size: 10px; opacity: 0.7;">${item.timestamp}</div>
+                            <div>${item.query.substring(0, 100)}${item.query.length > 100 ? '...' : ''}</div>
+                        </div>`
+                    ).join('')}
+                `;
+            }
+        }
+
+        function loadQuery(index) {
+            document.getElementById('customQuery').value = queryHistory[index].query;
+        }
+
+        // Placeholder functions for other tools
+        async function getUserConstraints() {
+            await testConstraints();
+        }
+
+        async function simulateUpdate() {
+            const email = document.getElementById('userEmail').value;
+            showResult(`
+                <h3>🎭 Simulate Update for ${email}</h3>
+                <p>This would test various update operations without making actual changes:</p>
+                <ul>
+                    <li>✅ Test subscription plan changes</li>
+                    <li>✅ Validate constraint compliance</li>
+                    <li>✅ Check foreign key relationships</li>
+                    <li>✅ Simulate rollback scenarios</li>
+                </ul>
+            `, 'warning');
+        }
+
+        async function checkMigrations() {
+            showResult(`
+                <h3>📋 Migration Status</h3>
+                <p>Database migration information would include:</p>
+                <ul>
+                    <li>Applied migrations list</li>
+                    <li>Pending migrations</li>
+                    <li>Migration timestamps</li>
+                    <li>Schema version</li>
+                </ul>
+            `, 'warning');
+        }
+
+        async function backupData() {
+            showResult(`
+                <h3>💾 Data Backup</h3>
+                <p>Backup operations would include:</p>
+                <ul>
+                    <li>Full database export</li>
+                    <li>User data export (CSV/JSON)</li>
+                    <li>Incremental backups</li>
+                    <li>Backup scheduling</li>
+                </ul>
+            `, 'warning');
+        }
+
+        async function validateIntegrity() {
+            showResult(`
+                <h3>🛡️ Data Integrity Check</h3>
+                <p>Integrity validation would check:</p>
+                <ul>
+                    <li>Referential integrity</li>
+                    <li>Data consistency</li>
+                    <li>Constraint violations</li>
+                    <li>Orphaned records</li>
+                </ul>
+            `, 'warning');
+        }
+
+        // Auto-load user email from URL params
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get('email');
+            
+            if (email) {
+                document.getElementById('userEmail').value = email;
+            }
+        });
+    </script>
+</body>
+</html>

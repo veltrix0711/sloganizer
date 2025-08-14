@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     const sessionTimeout = setTimeout(() => {
       console.warn('AuthContext: Session loading timed out, setting loading to false')
       setLoading(false)
-    }, 5000) // 5 second timeout - give more time for profile operations
+    }, 3000) // 3 second timeout - faster loading
 
     getSession().then(() => {
       clearTimeout(sessionTimeout)
@@ -106,9 +106,16 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (userId) => {
     try {
+      // Skip fetch if no userId
+      if (!userId) {
+        console.log('AuthContext: No userId provided, skipping profile fetch')
+        return null
+      }
+
       // Return cached profile if available
       if (profileCache.current[userId]) {
         console.log('AuthContext: Using cached profile for:', userId)
+        setProfile(profileCache.current[userId])
         return profileCache.current[userId]
       }
 
@@ -121,50 +128,60 @@ export const AuthProvider = ({ children }) => {
       fetchingProfiles.current.add(userId)
       console.log('AuthContext: Fetching user profile for:', userId)
       
-      // Add timeout to profile query to prevent hanging
-      const profilePromise = supabase
-        .from(TABLES.USER_PROFILES)
-        .select('*')
-        .eq('id', userId)
-        .single()
+      // Create AbortController for better timeout handling
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 4000) // 4 second timeout
+      
+      try {
+        const { data, error } = await supabase
+          .from(TABLES.USER_PROFILES)
+          .select('*')
+          .eq('id', userId)
+          .single()
+          .abortSignal(controller.signal)
 
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile query timeout')), 8000)
-      )
+        clearTimeout(timeoutId)
 
-      const { data, error } = await Promise.race([profilePromise, timeoutPromise])
-
-      if (error) {
-        fetchingProfiles.current.delete(userId)
-        console.error('Error fetching profile:', error)
-        if (error.code === 'PGRST116') {
-          console.log('AuthContext: No profile found (PGRST116), creating one...')
-          await createUserProfile(userId)
-          return
+        if (error) {
+          console.error('Error fetching profile:', error)
+          if (error.code === 'PGRST116') {
+            console.log('AuthContext: No profile found (PGRST116), creating one...')
+            await createUserProfile(userId)
+            return
+          }
+          
+          // For other errors, continue without profile to prevent infinite loading
+          console.warn('AuthContext: Continuing without profile due to error:', error)
+          setProfile(null)
+          return null
         }
-        
-        // For other errors, continue without profile to prevent infinite loading
-        console.warn('AuthContext: Continuing without profile due to error:', error)
-        return
-      }
 
-      if (data) {
-        console.log('AuthContext: Profile found:', data)
-        profileCache.current[userId] = data
-        setProfile(data)
-      } else {
-        console.log('AuthContext: No profile data, creating one...')
-        await createUserProfile(userId)
+        if (data) {
+          console.log('AuthContext: Profile found:', data)
+          profileCache.current[userId] = data
+          setProfile(data)
+          return data
+        } else {
+          console.log('AuthContext: No profile data, creating one...')
+          await createUserProfile(userId)
+          return null
+        }
+      } catch (abortError) {
+        clearTimeout(timeoutId)
+        if (abortError.name === 'AbortError') {
+          console.warn('AuthContext: Profile query was aborted (timeout)')
+          setProfile(null)
+        } else {
+          throw abortError
+        }
       }
       
-      fetchingProfiles.current.delete(userId)
     } catch (error) {
-      fetchingProfiles.current.delete(userId)
       console.error('Error fetching user profile:', error)
-      if (error.message === 'Profile query timeout') {
-        console.warn('AuthContext: Profile query timed out, continuing without profile')
-      }
-      // Continue without profile rather than hanging
+      setProfile(null)
+      // Don't crash the app, just continue without profile
+    } finally {
+      fetchingProfiles.current.delete(userId)
     }
   }
 
@@ -173,43 +190,56 @@ export const AuthProvider = ({ children }) => {
       console.log('AuthContext: Creating user profile for:', userId)
       const { data: userData } = await supabase.auth.getUser()
       
+      // Check if profile already exists but was just not accessible
+      const { data: existingProfile } = await supabase
+        .from(TABLES.USER_PROFILES)
+        .select('subscription_plan, subscription_status, slogans_remaining')
+        .eq('id', userId)
+        .single()
+
       const profileData = {
         id: userId,
         email: userData.user?.email || '',
         first_name: userData.user?.user_metadata?.first_name || '',
         last_name: userData.user?.user_metadata?.last_name || '',
-        subscription_plan: 'free',
-        subscription_status: 'active',
-        slogans_remaining: 3
+        // Preserve existing subscription data if profile exists
+        subscription_plan: existingProfile?.subscription_plan || 'free',
+        subscription_status: existingProfile?.subscription_status || 'active',
+        slogans_remaining: existingProfile?.slogans_remaining || 3
       }
 
-      console.log('AuthContext: Inserting profile data:', profileData)
+      console.log('AuthContext: Profile data to insert/update:', profileData)
       
-      // Add timeout to profile creation
-      const insertPromise = supabase
+      // Use upsert to avoid duplicate key errors and preserve existing data
+      const { data, error } = await supabase
         .from(TABLES.USER_PROFILES)
-        .insert(profileData)
+        .upsert(profileData, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        })
         .select()
         .single()
 
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile creation timeout')), 8000)
-      )
-
-      const { data, error } = await Promise.race([insertPromise, timeoutPromise])
-
       if (error) {
-        console.error('Error creating profile:', error)
+        console.error('Error upserting profile:', error)
+        // If upsert fails, try to fetch existing profile
+        const { data: existingData } = await supabase
+          .from(TABLES.USER_PROFILES)
+          .select('*')
+          .eq('id', userId)
+          .single()
+        
+        if (existingData) {
+          console.log('AuthContext: Using existing profile after upsert error:', existingData)
+          setProfile(existingData)
+        }
         return
       }
 
-      console.log('AuthContext: Profile created:', data)
+      console.log('AuthContext: Profile upserted successfully:', data)
       setProfile(data)
     } catch (error) {
-      console.error('Error creating user profile:', error)
-      if (error.message === 'Profile creation timeout') {
-        console.warn('AuthContext: Profile creation timed out')
-      }
+      console.error('Error creating/updating user profile:', error)
     }
   }
 
@@ -273,16 +303,35 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     try {
       setSessionLoading(true)
+      console.log('AuthContext: Starting sign out process...')
       
+      // Clear cache first
+      profileCache.current = {}
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      if (error) {
+        console.error('Supabase sign out error:', error)
+        throw error
+      }
 
+      // Clear local state immediately
+      setUser(null)
+      setProfile(null)
+      
+      console.log('AuthContext: Sign out successful')
       toast.success('Signed out successfully!')
       return { success: true }
       
     } catch (error) {
       console.error('Sign out error:', error)
-      toast.error(error.message || 'Failed to sign out')
+      
+      // Even if there's an error, clear local state to prevent stuck sessions
+      setUser(null)
+      setProfile(null)
+      profileCache.current = {}
+      
+      toast.error(error.message || 'Signed out with errors')
       return { success: false, error: error.message }
     } finally {
       setSessionLoading(false)
@@ -371,6 +420,35 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const fixSubscription = async (plan = 'agency') => {
+    try {
+      if (!user) throw new Error('No user logged in')
+
+      console.log('Fixing subscription to:', plan)
+      const { data, error } = await supabase
+        .from(TABLES.USER_PROFILES)
+        .update({ 
+          subscription_plan: plan,
+          subscription_status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setProfile(data)
+      toast.success(`Subscription fixed to ${plan}!`)
+      return { success: true, data }
+      
+    } catch (error) {
+      console.error('Subscription fix error:', error)
+      toast.error(error.message || 'Failed to fix subscription')
+      return { success: false, error: error.message }
+    }
+  }
+
   const value = {
     user,
     profile,
@@ -383,7 +461,8 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     updateProfile,
     refreshProfile,
-    getUsageStats
+    getUsageStats,
+    fixSubscription
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -24,31 +24,38 @@ class ApiService {
       try {
         const headers = await this.getAuthHeaders()
         const response = await fetch(url, {
-          headers,
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            ...headers
+          },
           ...options
         })
-        if (!response.ok) {
-          // Handle non-JSON error responses (like 429 rate limits)
-          const contentType = response.headers.get('content-type')
-          let errorMessage = `HTTP ${response.status}`
-          
-          if (contentType && contentType.includes('application/json')) {
-            try {
-              const data = await response.json()
-              errorMessage = data.error || data.message || errorMessage
-            } catch (parseError) {
-              // If JSON parsing fails, use status text
-              errorMessage = response.statusText || errorMessage
-            }
-          } else {
-            // Non-JSON response, use status text
-            errorMessage = response.statusText || errorMessage
+        
+        // Read response as text first to handle non-JSON responses
+        const text = await response.text()
+        const contentType = response.headers.get('content-type') || ''
+        
+        let data
+        if (contentType.includes('application/json')) {
+          try {
+            data = JSON.parse(text)
+          } catch (parseError) {
+            throw new Error(`Invalid JSON from ${endpoint}: ${text.slice(0, 200)}`)
           }
-          
+        } else if (!response.ok) {
+          // HTML or other non-JSON error response
+          throw new Error(`Non-JSON ${response.status} from ${endpoint}. Response: ${text.slice(0, 120)}`)
+        } else {
+          // Allow empty OK responses
+          data = text || {}
+        }
+        
+        if (!response.ok) {
+          const errorMessage = data?.error || data?.message || response.statusText || `HTTP ${response.status}`
           throw new Error(errorMessage)
         }
         
-        const data = await response.json()
         return data
       } catch (error) {
         console.error(`API request failed: ${endpoint}`, error)

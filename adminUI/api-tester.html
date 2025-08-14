@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tester - Sloganizer Admin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #f0f8ff;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+        }
+        input::placeholder, textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .method-selector {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .method-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .method-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+        .method-btn.get { border-color: #2196F3; }
+        .method-btn.get.active { background: #2196F3; }
+        .method-btn.post { border-color: #4CAF50; }
+        .method-btn.post.active { background: #4CAF50; }
+        .method-btn.put { border-color: #FF9800; }
+        .method-btn.put.active { background: #FF9800; }
+        .method-btn.delete { border-color: #f44336; }
+        .method-btn.delete.active { background: #f44336; }
+        .quick-endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .endpoint-btn {
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        .endpoint-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+        .endpoint-method {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .endpoint-method.get { background: #2196F3; }
+        .endpoint-method.post { background: #4CAF50; }
+        .endpoint-method.put { background: #FF9800; }
+        .endpoint-method.delete { background: #f44336; }
+        .endpoint-path {
+            font-family: monospace;
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        .result {
+            margin-top: 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .result-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .result-body {
+            padding: 15px;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-200 { background: #4CAF50; }
+        .status-400 { background: #FF9800; }
+        .status-404 { background: #f44336; }
+        .status-500 { background: #9C27B0; }
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+        .history-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .history-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .history-method {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .history-time {
+            font-size: 10px;
+            opacity: 0.7;
+            float: right;
+        }
+        .history-url {
+            font-family: monospace;
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            border-bottom-color: #4CAF50;
+            background: rgba(255,255,255,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔌 API Tester</h1>
+            <p>Test and debug API endpoints</p>
+        </div>
+
+        <div class="two-column">
+            <!-- Request Builder -->
+            <div class="card">
+                <h2>📤 Request Builder</h2>
+                
+                <!-- Method Selector -->
+                <div class="method-selector">
+                    <button class="method-btn get active" onclick="selectMethod('GET')">GET</button>
+                    <button class="method-btn post" onclick="selectMethod('POST')">POST</button>
+                    <button class="method-btn put" onclick="selectMethod('PUT')">PUT</button>
+                    <button class="method-btn delete" onclick="selectMethod('DELETE')">DELETE</button>
+                </div>
+                
+                <!-- URL Input -->
+                <div class="input-group">
+                    <label for="apiUrl">API Endpoint URL</label>
+                    <input type="text" id="apiUrl" placeholder="/api/health" value="/api/health">
+                </div>
+                
+                <!-- Headers -->
+                <div class="input-group">
+                    <label for="headers">Headers (JSON)</label>
+                    <textarea id="headers" placeholder='{"Content-Type": "application/json"}'>{
+  "Content-Type": "application/json"
+}</textarea>
+                </div>
+                
+                <!-- Request Body -->
+                <div class="input-group" id="bodySection" style="display: none;">
+                    <label for="requestBody">Request Body (JSON)</label>
+                    <textarea id="requestBody" placeholder='{"key": "value"}'></textarea>
+                </div>
+                
+                <!-- Actions -->
+                <div>
+                    <button class="btn" onclick="sendRequest()">Send Request</button>
+                    <button class="btn btn-secondary" onclick="saveRequest()">Save</button>
+                    <button class="btn btn-warning" onclick="clearRequest()">Clear</button>
+                </div>
+            </div>
+            
+            <!-- Quick Endpoints -->
+            <div class="card">
+                <h2>⚡ Quick Endpoints</h2>
+                <div class="quick-endpoints">
+                    <div class="endpoint-btn" onclick="loadEndpoint('GET', '/api/health')">
+                        <div class="endpoint-method get">GET</div>
+                        <div class="endpoint-path">/api/health</div>
+                        <div style="font-size: 10px; opacity: 0.7;">Check API health</div>
+                    </div>
+                    
+                    <div class="endpoint-btn" onclick="loadEndpoint('GET', '/api/admin/check-user/corey.osmond99@gmail.com')">
+                        <div class="endpoint-method get">GET</div>
+                        <div class="endpoint-path">/api/admin/check-user/[email]</div>
+                        <div style="font-size: 10px; opacity: 0.7;">Get user info</div>
+                    </div>
+                    
+                    <div class="endpoint-btn" onclick="loadEndpoint('GET', '/api/billing/subscription-status?email=corey.osmond99@gmail.com')">
+                        <div class="endpoint-method get">GET</div>
+                        <div class="endpoint-path">/api/billing/subscription-status</div>
+                        <div style="font-size: 10px; opacity: 0.7;">Get subscription</div>
+                    </div>
+                    
+                    <div class="endpoint-btn" onclick="loadEndpoint('POST', '/api/billing/admin-update/corey.osmond99@gmail.com', '{\"subscription_plan\": \"pro\"}')">
+                        <div class="endpoint-method post">POST</div>
+                        <div class="endpoint-path">/api/billing/admin-update/[email]</div>
+                        <div style="font-size: 10px; opacity: 0.7;">Update subscription</div>
+                    </div>
+                    
+                    <div class="endpoint-btn" onclick="loadEndpoint('GET', '/api/debug/table-structure/corey.osmond99@gmail.com')">
+                        <div class="endpoint-method get">GET</div>
+                        <div class="endpoint-path">/api/debug/table-structure/[email]</div>
+                        <div style="font-size: 10px; opacity: 0.7;">Debug table structure</div>
+                    </div>
+                    
+                    <div class="endpoint-btn" onclick="loadEndpoint('GET', '/api/debug/test-subscription-values/corey.osmond99@gmail.com')">
+                        <div class="endpoint-method get">GET</div>
+                        <div class="endpoint-path">/api/debug/test-subscription-values/[email]</div>
+                        <div style="font-size: 10px; opacity: 0.7;">Test constraints</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Response and History -->
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('response')">📥 Response</div>
+                <div class="tab" onclick="switchTab('history')">📚 History</div>
+                <div class="tab" onclick="switchTab('examples')">📖 Examples</div>
+            </div>
+            
+            <!-- Response Tab -->
+            <div class="tab-content active" id="responseTab">
+                <div id="response">
+                    <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                        No request sent yet. Use the request builder above to test API endpoints.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div class="tab-content" id="historyTab">
+                <div id="requestHistory">
+                    <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                        No requests in history yet.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Examples Tab -->
+            <div class="tab-content" id="examplesTab">
+                <h3>📖 API Examples</h3>
+                
+                <h4>User Management:</h4>
+                <pre><strong>Get User Info:</strong>
+GET /api/admin/check-user/corey.osmond99@gmail.com
+
+<strong>Update Subscription:</strong>
+POST /api/billing/admin-update/corey.osmond99@gmail.com
+{
+  "subscription_plan": "pro",
+  "subscription_status": "active"
+}</pre>
+
+                <h4>Billing Operations:</h4>
+                <pre><strong>Get Subscription Status:</strong>
+GET /api/billing/subscription-status?email=corey.osmond99@gmail.com
+
+<strong>Create Checkout Session:</strong>
+POST /api/billing/checkout
+{
+  "planCode": "PRO_500",
+  "successUrl": "https://example.com/success",
+  "cancelUrl": "https://example.com/cancel"
+}</pre>
+
+                <h4>Debug Operations:</h4>
+                <pre><strong>Check Table Structure:</strong>
+GET /api/debug/table-structure/corey.osmond99@gmail.com
+
+<strong>Test Subscription Values:</strong>
+GET /api/debug/test-subscription-values/corey.osmond99@gmail.com</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://sloganixerbackend-production.up.railway.app';
+        let currentMethod = 'GET';
+        let requestHistory = [];
+        
+        function selectMethod(method) {
+            currentMethod = method;
+            
+            // Update button states
+            document.querySelectorAll('.method-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.method-btn.${method.toLowerCase()}`).classList.add('active');
+            
+            // Show/hide body section for methods that need it
+            const bodySection = document.getElementById('bodySection');
+            if (method === 'POST' || method === 'PUT') {
+                bodySection.style.display = 'block';
+            } else {
+                bodySection.style.display = 'none';
+            }
+        }
+        
+        function loadEndpoint(method, path, body = '') {
+            selectMethod(method);
+            document.getElementById('apiUrl').value = path;
+            if (body) {
+                document.getElementById('requestBody').value = body;
+            }
+        }
+        
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+        
+        async function sendRequest() {
+            const url = document.getElementById('apiUrl').value.trim();
+            const headersText = document.getElementById('headers').value.trim();
+            const bodyText = document.getElementById('requestBody').value.trim();
+            
+            if (!url) {
+                showResponse('❌ Please enter an API endpoint URL', 'error');
+                return;
+            }
+            
+            // Build full URL
+            const fullUrl = url.startsWith('http') ? url : API_BASE + url;
+            
+            // Parse headers
+            let headers = {};
+            try {
+                if (headersText) {
+                    headers = JSON.parse(headersText);
+                }
+            } catch (e) {
+                showResponse('❌ Invalid JSON in headers', 'error');
+                return;
+            }
+            
+            // Parse body
+            let body = null;
+            if ((currentMethod === 'POST' || currentMethod === 'PUT') && bodyText) {
+                try {
+                    JSON.parse(bodyText); // Validate JSON
+                    body = bodyText;
+                } catch (e) {
+                    showResponse('❌ Invalid JSON in request body', 'error');
+                    return;
+                }
+            }
+            
+            showResponse('🔄 Sending request...', 'loading');
+            
+            const startTime = Date.now();
+            
+            try {
+                const requestOptions = {
+                    method: currentMethod,
+                    headers
+                };
+                
+                if (body) {
+                    requestOptions.body = body;
+                }
+                
+                const response = await fetch(fullUrl, requestOptions);
+                const responseTime = Date.now() - startTime;
+                
+                let responseData;
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    responseData = await response.json();
+                } else {
+                    responseData = await response.text();
+                }
+                
+                const requestInfo = {
+                    method: currentMethod,
+                    url: fullUrl,
+                    headers,
+                    body,
+                    response: {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: Object.fromEntries(response.headers.entries()),
+                        data: responseData
+                    },
+                    responseTime,
+                    timestamp: new Date()
+                };
+                
+                addToHistory(requestInfo);
+                showResponse(formatResponse(requestInfo), getStatusType(response.status));
+                
+            } catch (error) {
+                const errorInfo = {
+                    method: currentMethod,
+                    url: fullUrl,
+                    headers,
+                    body,
+                    error: error.message,
+                    timestamp: new Date()
+                };
+                
+                addToHistory(errorInfo);
+                showResponse(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function formatResponse(requestInfo) {
+            const statusBadge = `<span class="status-badge status-${Math.floor(requestInfo.response.status / 100)}00">${requestInfo.response.status} ${requestInfo.response.statusText}</span>`;
+            
+            return `
+                <div class="result">
+                    <div class="result-header">
+                        <div>
+                            <strong>${requestInfo.method}</strong> ${requestInfo.url}
+                        </div>
+                        <div>
+                            ${statusBadge}
+                            <span style="margin-left: 10px; font-size: 12px; opacity: 0.8;">${requestInfo.responseTime}ms</span>
+                        </div>
+                    </div>
+                    <div class="result-body">
+                        <h4>Response Headers:</h4>
+                        <pre>${JSON.stringify(requestInfo.response.headers, null, 2)}</pre>
+                        
+                        <h4>Response Body:</h4>
+                        <pre>${typeof requestInfo.response.data === 'string' ? requestInfo.response.data : JSON.stringify(requestInfo.response.data, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showResponse(content, type) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = content;
+        }
+        
+        function getStatusType(status) {
+            if (status >= 200 && status < 300) return 'success';
+            if (status >= 400 && status < 500) return 'warning';
+            if (status >= 500) return 'error';
+            return 'info';
+        }
+        
+        function addToHistory(requestInfo) {
+            requestHistory.unshift(requestInfo);
+            if (requestHistory.length > 20) {
+                requestHistory = requestHistory.slice(0, 20);
+            }
+            updateHistoryDisplay();
+        }
+        
+        function updateHistoryDisplay() {
+            const historyDiv = document.getElementById('requestHistory');
+            
+            if (requestHistory.length === 0) {
+                historyDiv.innerHTML = '<div style="text-align: center; padding: 40px; opacity: 0.6;">No requests in history yet.</div>';
+                return;
+            }
+            
+            historyDiv.innerHTML = requestHistory.map((item, index) => {
+                const status = item.response ? item.response.status : 'ERR';
+                const statusClass = item.response ? `status-${Math.floor(item.response.status / 100)}00` : 'status-500';
+                
+                return `
+                    <div class="history-item" onclick="loadFromHistory(${index})">
+                        <div>
+                            <span class="history-method ${item.method.toLowerCase()}">${item.method}</span>
+                            <span class="status-badge ${statusClass}">${status}</span>
+                            <span class="history-time">${item.timestamp.toLocaleTimeString()}</span>
+                        </div>
+                        <div class="history-url">${item.url}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function loadFromHistory(index) {
+            const item = requestHistory[index];
+            
+            selectMethod(item.method);
+            document.getElementById('apiUrl').value = item.url.replace(API_BASE, '');
+            
+            if (item.headers) {
+                document.getElementById('headers').value = JSON.stringify(item.headers, null, 2);
+            }
+            
+            if (item.body) {
+                document.getElementById('requestBody').value = item.body;
+            }
+            
+            // Switch to response tab and show the response
+            switchTab('response');
+            if (item.response) {
+                showResponse(formatResponse(item), getStatusType(item.response.status));
+            } else if (item.error) {
+                showResponse(`❌ Network Error: ${item.error}`, 'error');
+            }
+        }
+        
+        function saveRequest() {
+            const request = {
+                method: currentMethod,
+                url: document.getElementById('apiUrl').value,
+                headers: document.getElementById('headers').value,
+                body: document.getElementById('requestBody').value
+            };
+            
+            localStorage.setItem('savedApiRequest', JSON.stringify(request));
+            showResponse('✅ Request saved successfully', 'success');
+        }
+        
+        function clearRequest() {
+            document.getElementById('apiUrl').value = '';
+            document.getElementById('headers').value = '{\n  "Content-Type": "application/json"\n}';
+            document.getElementById('requestBody').value = '';
+            showResponse('🗑️ Request cleared', 'info');
+        }
+        
+        // Load saved request on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const saved = localStorage.getItem('savedApiRequest');
+            if (saved) {
+                try {
+                    const request = JSON.parse(saved);
+                    selectMethod(request.method);
+                    document.getElementById('apiUrl').value = request.url;
+                    document.getElementById('headers').value = request.headers;
+                    document.getElementById('requestBody').value = request.body;
+                } catch (e) {
+                    console.error('Failed to load saved request:', e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

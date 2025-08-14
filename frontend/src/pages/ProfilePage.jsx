@@ -3,7 +3,7 @@ import { User, Mail, CreditCard, Shield } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 
 const ProfilePage = () => {
-  const { user, profile, updateProfile } = useAuth()
+  const { user, profile, updateProfile, fixSubscription } = useAuth()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -112,16 +112,28 @@ const ProfilePage = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Plan</span>
-                  <span className="font-medium capitalize">{profile?.subscription_tier || 'free'}</span>
+                  <span className="font-medium capitalize">
+                    {(profile?.subscription_plan === 'pro' || profile?.subscription_plan === 'pro_500' || profile?.subscription_plan === 'pro-500') ? 'Professional' : 
+                     (profile?.subscription_plan === 'agency' || profile?.subscription_plan === 'premium') ? 'Enterprise' : 
+                     'Starter'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status</span>
                   <span className="font-medium capitalize">{profile?.subscription_status || 'active'}</span>
                 </div>
-                <div className="pt-3">
+                <div className="pt-3 space-y-2">
                   <a href="/pricing" className="btn btn-outline w-full text-sm">
                     Manage Subscription
                   </a>
+                  {profile?.subscription_plan === 'free' && (
+                    <button 
+                      onClick={() => fixSubscription('agency')}
+                      className="btn btn-primary w-full text-sm bg-red-600 hover:bg-red-700"
+                    >
+                      🔧 Fix Subscription to Agency
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -52,11 +52,13 @@ const GeneratorPage = () => {
 
   const loadBrandProfiles = async () => {
     try {
-      const response = await fetch('/api/brand/profiles', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
+      if (!user?.email) {
+        console.log('No user email available for loading brand profiles');
+        return;
+      }
+
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_BASE_URL}/api/brand/profiles?email=${encodeURIComponent(user.email)}`)
       
       if (response.ok) {
         const data = await response.json()
