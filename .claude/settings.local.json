@@ -22,7 +22,8 @@
       "Bash(git reset:*)",
       "Bash(start update-subscription.html)",
       "Bash(npm run lint)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(git pull:*)"
     ],
     "deny": []
   }
