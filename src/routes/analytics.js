@@ -500,21 +500,7 @@ router.get('/accounts', async (req, res) => {
       });
     }
 
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', email)
-      .single();
-
-    if (profileError) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
-
-    // Return mock connected accounts
+    // Return mock connected accounts (no database calls)
     const mockAccounts = [
       {
         id: 'mock-instagram-1',
@@ -621,21 +607,7 @@ router.get('/sync/status', async (req, res) => {
       });
     }
 
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', email)
-      .single();
-
-    if (profileError) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
-
-    // Return mock sync status
+    // Return mock sync status (no database calls)
     const mockSyncStatus = [
       {
         platform: 'instagram',
