@@ -136,6 +136,45 @@ app.get('/api/debug/table-structure/:email', async (req, res) => {
   }
 });
 
+// Debug route to test allowed subscription values
+app.get('/api/debug/test-subscription-values/:email', async (req, res) => {
+  const { email } = req.params;
+  const testValues = ['free', 'pro', 'premium', 'agency', 'starter', 'professional', 'enterprise', 'pro_500', 'pro-500'];
+  
+  const results = {};
+  
+  for (const value of testValues) {
+    try {
+      // Test each value to see which ones are allowed
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ subscription_plan: value })
+        .eq('email', email)
+        .select();
+      
+      if (error) {
+        results[value] = { allowed: false, error: error.message };
+      } else {
+        results[value] = { allowed: true, data: data };
+        
+        // Reset back to original value if test worked
+        await supabase
+          .from('profiles')
+          .update({ subscription_plan: 'agency' })
+          .eq('email', email);
+      }
+    } catch (error) {
+      results[value] = { allowed: false, error: error.message };
+    }
+  }
+  
+  res.json({
+    success: true,
+    test_results: results,
+    message: 'Tested various subscription_plan values'
+  });
+});
+
 // Admin route to check user subscription (temporary)
 app.get('/api/admin/check-user/:email', async (req, res) => {
   try {
