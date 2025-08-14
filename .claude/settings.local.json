@@ -21,7 +21,8 @@
       "Bash(grep:*)",
       "Bash(git reset:*)",
       "Bash(start update-subscription.html)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(ping:*)"
     ],
     "deny": []
   }

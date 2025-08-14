@@ -91,7 +91,7 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
     }
 
     // Send to backend
-    const response = await api.post('/analytics/connect', mockData)
+    const response = await api.post('/api/analytics/connect', mockData)
 
     if (response.data.success) {
       setStep('success')
@@ -100,7 +100,7 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
       // Trigger sync
       setTimeout(async () => {
         try {
-          await api.post('/analytics/sync', {
+          await api.post('/api/analytics/sync', {
             email: user.email,
             platform: platform.id
           })

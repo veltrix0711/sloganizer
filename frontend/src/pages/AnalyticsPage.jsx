@@ -50,19 +50,19 @@ const AnalyticsPage = () => {
     setLoading(true)
     try {
       // Load overview data
-      const overviewRes = await api.get(`/analytics/overview?email=${user.email}`)
+      const overviewRes = await api.get(`/api/analytics/overview?email=${user.email}`)
       if (overviewRes.data.success) {
         setOverview(overviewRes.data.overview)
       }
 
       // Load detailed metrics
-      const metricsRes = await api.get(`/analytics/metrics?email=${user.email}&days=${selectedPeriod}${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`)
+      const metricsRes = await api.get(`/api/analytics/metrics?email=${user.email}&days=${selectedPeriod}${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`)
       if (metricsRes.data.success) {
         setMetrics(metricsRes.data.metrics)
       }
 
       // Load top performing posts
-      const topPostsRes = await api.get(`/analytics/top-posts?email=${user.email}&limit=5${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`)
+      const topPostsRes = await api.get(`/api/analytics/top-posts?email=${user.email}&limit=5${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`)
       if (topPostsRes.data.success) {
         setTopPosts(topPostsRes.data.topPosts)
       }
@@ -77,7 +77,7 @@ const AnalyticsPage = () => {
 
   const handleExport = async (format) => {
     try {
-      const baseUrl = `/analytics/export?email=${user.email}&days=${selectedPeriod}${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`
+      const baseUrl = `/api/analytics/export?email=${user.email}&days=${selectedPeriod}${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`
       
       if (format === 'pdf') {
         // Handle PDF download
@@ -155,7 +155,7 @@ const AnalyticsPage = () => {
     if (!user?.email) return
     
     try {
-      const response = await api.get(`/analytics/accounts?email=${user.email}`)
+      const response = await api.get(`/api/analytics/accounts?email=${user.email}`)
       if (response.data.success) {
         setConnectedAccounts(response.data.accounts)
       }
@@ -168,7 +168,7 @@ const AnalyticsPage = () => {
     if (!user?.email) return
     
     try {
-      const response = await api.get(`/analytics/sync/status?email=${user.email}`)
+      const response = await api.get(`/api/analytics/sync/status?email=${user.email}`)
       if (response.data.success) {
         setSyncStatus(response.data)
       }
@@ -185,7 +185,7 @@ const AnalyticsPage = () => {
       const payload = { email: user.email }
       if (platform) payload.platform = platform
 
-      const response = await api.post('/analytics/sync', payload)
+      const response = await api.post('/api/analytics/sync', payload)
       if (response.data.success) {
         toast.success(response.data.message)
         // Reload data after sync
