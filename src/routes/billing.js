@@ -64,7 +64,7 @@ router.get('/subscription', authMiddleware, async (req, res) => {
       'premium': { plan: 'enterprise', planName: 'Enterprise' }
     };
 
-    const tierInfo = tierMapping[profile.subscription_tier] || { plan: 'starter', planName: 'Starter' };
+    const tierInfo = tierMapping[profile.subscription_plan] || { plan: 'starter', planName: 'Starter' };
 
     res.json({
       success: true,
@@ -72,7 +72,7 @@ router.get('/subscription', authMiddleware, async (req, res) => {
         status: profile.subscription_status || 'active',
         plan: tierInfo.plan,
         planName: tierInfo.planName,
-        tier: profile.subscription_tier,
+        tier: profile.subscription_plan,
         currentPeriodStart: new Date().toISOString(),
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
@@ -216,7 +216,7 @@ router.post('/admin-update/:email', async (req, res) => {
     const { data, error } = await supabase
       .from('profiles')
       .update({ 
-        subscription_tier,
+        subscription_plan: subscription_tier, // Use subscription_plan column
         subscription_status: 'active',
         updated_at: new Date().toISOString()
       })

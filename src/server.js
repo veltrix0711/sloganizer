@@ -210,7 +210,7 @@ app.post('/api/admin/update-subscription', async (req, res) => {
     const { data, error } = await supabase
       .from('profiles')
       .update({ 
-        subscription_tier,
+        subscription_plan: subscription_tier, // Use subscription_plan column
         subscription_status: 'active',
         updated_at: new Date().toISOString()
       })
