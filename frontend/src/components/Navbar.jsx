@@ -11,9 +11,25 @@ const Navbar = () => {
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
-    await signOut()
-    setIsUserMenuOpen(false)
-    navigate('/')
+    try {
+      console.log('Signing out...')
+      setIsUserMenuOpen(false)
+      const result = await signOut()
+      console.log('Sign out result:', result)
+      
+      // Force navigation to home
+      navigate('/', { replace: true })
+      
+      // Force page reload if needed to clear all state
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 100)
+    } catch (error) {
+      console.error('Sign out error:', error)
+      setIsUserMenuOpen(false)
+      // Still navigate home even if sign out fails
+      navigate('/', { replace: true })
+    }
   }
 
   const isActivePath = (path) => {

@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     const sessionTimeout = setTimeout(() => {
       console.warn('AuthContext: Session loading timed out, setting loading to false')
       setLoading(false)
-    }, 5000) // 5 second timeout - give more time for profile operations
+    }, 3000) // 3 second timeout - faster loading
 
     getSession().then(() => {
       clearTimeout(sessionTimeout)
@@ -130,7 +130,7 @@ export const AuthProvider = ({ children }) => {
       
       // Create AbortController for better timeout handling
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 8000) // 8 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 4000) // 4 second timeout
       
       try {
         const { data, error } = await supabase
