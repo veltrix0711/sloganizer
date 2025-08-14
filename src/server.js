@@ -101,6 +101,41 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug route to check table structure
+app.get('/api/debug/table-structure/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    // First, let's see what columns exist by selecting a user
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .limit(1);
+
+    if (error) {
+      return res.json({
+        success: false,
+        error: error.message,
+        details: error
+      });
+    }
+
+    // Return the structure
+    res.json({
+      success: true,
+      user_data: data[0] || 'No user found',
+      available_columns: data[0] ? Object.keys(data[0]) : 'No data to analyze'
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Admin route to check user subscription (temporary)
 app.get('/api/admin/check-user/:email', async (req, res) => {
   try {
