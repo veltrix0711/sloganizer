@@ -51,20 +51,20 @@ const AnalyticsPage = () => {
     try {
       // Load overview data
       const overviewRes = await api.get(`/api/analytics/overview?email=${user.email}`)
-      if (overviewRes.data.success) {
-        setOverview(overviewRes.data.overview)
+      if (overviewRes.success) {
+        setOverview(overviewRes.overview)
       }
 
       // Load detailed metrics
       const metricsRes = await api.get(`/api/analytics/metrics?email=${user.email}&days=${selectedPeriod}${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`)
-      if (metricsRes.data.success) {
-        setMetrics(metricsRes.data.metrics)
+      if (metricsRes.success) {
+        setMetrics(metricsRes.metrics)
       }
 
       // Load top performing posts
       const topPostsRes = await api.get(`/api/analytics/top-posts?email=${user.email}&limit=5${selectedPlatform !== 'all' ? `&platform=${selectedPlatform}` : ''}`)
-      if (topPostsRes.data.success) {
-        setTopPosts(topPostsRes.data.topPosts)
+      if (topPostsRes.success) {
+        setTopPosts(topPostsRes.topPosts)
       }
 
     } catch (error) {
@@ -156,8 +156,8 @@ const AnalyticsPage = () => {
     
     try {
       const response = await api.get(`/api/analytics/accounts?email=${user.email}`)
-      if (response.data.success) {
-        setConnectedAccounts(response.data.accounts)
+      if (response.success) {
+        setConnectedAccounts(response.accounts)
       }
     } catch (error) {
       console.error('Failed to load connected accounts:', error)
@@ -169,8 +169,8 @@ const AnalyticsPage = () => {
     
     try {
       const response = await api.get(`/api/analytics/sync/status?email=${user.email}`)
-      if (response.data.success) {
-        setSyncStatus(response.data)
+      if (response.success) {
+        setSyncStatus(response)
       }
     } catch (error) {
       console.error('Failed to load sync status:', error)
@@ -186,8 +186,8 @@ const AnalyticsPage = () => {
       if (platform) payload.platform = platform
 
       const response = await api.post('/api/analytics/sync', payload)
-      if (response.data.success) {
-        toast.success(response.data.message)
+      if (response.success) {
+        toast.success(response.message)
         // Reload data after sync
         setTimeout(() => {
           loadAnalyticsData()

@@ -93,7 +93,7 @@ const SocialConnectModal = ({ isOpen, onClose, onAccountConnected }) => {
     // Send to backend
     const response = await api.post('/api/analytics/connect', mockData)
 
-    if (response.data.success) {
+    if (response.success) {
       setStep('success')
       toast.success(`${platform.name} connected successfully!`)
       
