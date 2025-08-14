@@ -190,43 +190,56 @@ export const AuthProvider = ({ children }) => {
       console.log('AuthContext: Creating user profile for:', userId)
       const { data: userData } = await supabase.auth.getUser()
       
+      // Check if profile already exists but was just not accessible
+      const { data: existingProfile } = await supabase
+        .from(TABLES.USER_PROFILES)
+        .select('subscription_plan, subscription_status, slogans_remaining')
+        .eq('id', userId)
+        .single()
+
       const profileData = {
         id: userId,
         email: userData.user?.email || '',
         first_name: userData.user?.user_metadata?.first_name || '',
         last_name: userData.user?.user_metadata?.last_name || '',
-        subscription_plan: 'free',
-        subscription_status: 'active',
-        slogans_remaining: 3
+        // Preserve existing subscription data if profile exists
+        subscription_plan: existingProfile?.subscription_plan || 'free',
+        subscription_status: existingProfile?.subscription_status || 'active',
+        slogans_remaining: existingProfile?.slogans_remaining || 3
       }
 
-      console.log('AuthContext: Inserting profile data:', profileData)
+      console.log('AuthContext: Profile data to insert/update:', profileData)
       
-      // Add timeout to profile creation
-      const insertPromise = supabase
+      // Use upsert to avoid duplicate key errors and preserve existing data
+      const { data, error } = await supabase
         .from(TABLES.USER_PROFILES)
-        .insert(profileData)
+        .upsert(profileData, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        })
         .select()
         .single()
 
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile creation timeout')), 8000)
-      )
-
-      const { data, error } = await Promise.race([insertPromise, timeoutPromise])
-
       if (error) {
-        console.error('Error creating profile:', error)
+        console.error('Error upserting profile:', error)
+        // If upsert fails, try to fetch existing profile
+        const { data: existingData } = await supabase
+          .from(TABLES.USER_PROFILES)
+          .select('*')
+          .eq('id', userId)
+          .single()
+        
+        if (existingData) {
+          console.log('AuthContext: Using existing profile after upsert error:', existingData)
+          setProfile(existingData)
+        }
         return
       }
 
-      console.log('AuthContext: Profile created:', data)
+      console.log('AuthContext: Profile upserted successfully:', data)
       setProfile(data)
     } catch (error) {
-      console.error('Error creating user profile:', error)
-      if (error.message === 'Profile creation timeout') {
-        console.warn('AuthContext: Profile creation timed out')
-      }
+      console.error('Error creating/updating user profile:', error)
     }
   }
 
@@ -407,6 +420,35 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const fixSubscription = async (plan = 'agency') => {
+    try {
+      if (!user) throw new Error('No user logged in')
+
+      console.log('Fixing subscription to:', plan)
+      const { data, error } = await supabase
+        .from(TABLES.USER_PROFILES)
+        .update({ 
+          subscription_plan: plan,
+          subscription_status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setProfile(data)
+      toast.success(`Subscription fixed to ${plan}!`)
+      return { success: true, data }
+      
+    } catch (error) {
+      console.error('Subscription fix error:', error)
+      toast.error(error.message || 'Failed to fix subscription')
+      return { success: false, error: error.message }
+    }
+  }
+
   const value = {
     user,
     profile,
@@ -419,7 +461,8 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     updateProfile,
     refreshProfile,
-    getUsageStats
+    getUsageStats,
+    fixSubscription
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
