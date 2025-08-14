@@ -57,7 +57,8 @@ const GeneratorPage = () => {
         return;
       }
 
-      const response = await fetch(`/api/brand/profiles?email=${encodeURIComponent(user.email)}`)
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_BASE_URL}/api/brand/profiles?email=${encodeURIComponent(user.email)}`)
       
       if (response.ok) {
         const data = await response.json()

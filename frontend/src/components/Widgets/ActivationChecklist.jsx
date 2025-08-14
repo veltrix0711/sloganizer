@@ -27,7 +27,8 @@ const ActivationChecklist = ({ user, onDismiss }) => {
       }
 
       // Check for brand profiles
-      const profilesResponse = await fetch(`/api/brand/profiles?email=${encodeURIComponent(user.email)}`);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const profilesResponse = await fetch(`${API_BASE_URL}/api/brand/profiles?email=${encodeURIComponent(user.email)}`);
       
       if (profilesResponse.ok) {
         const profilesData = await profilesResponse.json();
@@ -38,7 +39,7 @@ const ActivationChecklist = ({ user, onDismiss }) => {
         if (hasProfiles) {
           for (const profile of profilesData.profiles) {
             try {
-              const voiceResponse = await fetch(`/api/voice-training/profiles/${profile.id}/status?email=${encodeURIComponent(user.email)}`);
+              const voiceResponse = await fetch(`${API_BASE_URL}/api/voice-training/profiles/${profile.id}/status?email=${encodeURIComponent(user.email)}`);
               if (voiceResponse.ok) {
                 const voiceData = await voiceResponse.json();
                 if (voiceData.progress?.analyzed_samples > 0) {
