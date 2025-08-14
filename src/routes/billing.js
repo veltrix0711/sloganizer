@@ -30,13 +30,49 @@ const authMiddleware = async (req, res, next) => {
 // Get subscription status
 router.get('/subscription', authMiddleware, async (req, res) => {
   try {
-    // For now, return free plan status
+    // Get user profile from Supabase
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      // Return default if profile not found
+      return res.json({
+        success: true,
+        subscription: {
+          status: 'active',
+          plan: 'starter',
+          planName: 'Starter',
+          currentPeriodStart: new Date().toISOString(),
+          currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
+          trialEnd: null
+        }
+      });
+    }
+
+    // Map subscription tier to plan info
+    const tierMapping = {
+      'free': { plan: 'starter', planName: 'Starter' },
+      'pro': { plan: 'professional', planName: 'Professional' },
+      'pro_500': { plan: 'professional', planName: 'Professional' },
+      'pro-500': { plan: 'professional', planName: 'Professional' },
+      'agency': { plan: 'enterprise', planName: 'Enterprise' },
+      'premium': { plan: 'enterprise', planName: 'Enterprise' }
+    };
+
+    const tierInfo = tierMapping[profile.subscription_plan] || { plan: 'starter', planName: 'Starter' };
+
     res.json({
       success: true,
       subscription: {
-        status: 'active',
-        plan: 'starter',
-        planName: 'Starter',
+        status: profile.subscription_status || 'active',
+        plan: tierInfo.plan,
+        planName: tierInfo.planName,
+        tier: profile.subscription_plan,
         currentPeriodStart: new Date().toISOString(),
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
@@ -154,6 +190,64 @@ router.get('/upgrade-suggestions', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting upgrade suggestions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Admin route to directly update subscription (temporary, no auth)
+router.post('/admin-update/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { subscription_tier } = req.body;
+    
+    console.log('Admin update request for:', email, 'to tier:', subscription_tier);
+    
+    if (!subscription_tier) {
+      return res.status(400).json({
+        success: false,
+        error: 'subscription_tier required in body'
+      });
+    }
+
+    // Update user subscription directly
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ 
+        subscription_plan: subscription_tier, // Use subscription_plan column
+        subscription_status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .eq('email', email)
+      .select();
+
+    if (error) {
+      console.error('Error updating subscription:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    console.log('Successfully updated:', data);
+    
+    res.json({
+      success: true,
+      updated: data[0],
+      message: `Updated ${email} to ${subscription_tier}`
+    });
+
+  } catch (error) {
+    console.error('Admin update error:', error);
     res.status(500).json({
       success: false,
       error: error.message
