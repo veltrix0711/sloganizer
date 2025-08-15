@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { 
   Search, 
   Filter, 
@@ -36,6 +36,9 @@ const TemplateMarketplacePage = () => {
   const [favorites, setFavorites] = useState(new Set())
   const [showPreview, setShowPreview] = useState(false)
   const [previewTemplate, setPreviewTemplate] = useState(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const loadMoreRef = useRef(null)
 
   // Sync URL from state
   useEffect(() => {
@@ -66,7 +69,11 @@ const TemplateMarketplacePage = () => {
 
   const loadTemplates = async () => {
     try {
-      setLoading(true)
+      if (page === 1) {
+        setLoading(true)
+      } else {
+        setLoadingMore(true)
+      }
       const params = new URLSearchParams()
       if (searchTerm) params.set('q', searchTerm)
       if (selectedCategory && selectedCategory !== 'all') params.set('category', selectedCategory)
@@ -76,16 +83,39 @@ const TemplateMarketplacePage = () => {
       params.set('pageSize', String(pageSize))
       const response = await api.get(`/api/templates?${params.toString()}`)
       if (response.success) {
-        setTemplates(response.templates || [])
-        setTotal(response.total || 0)
+        const newItems = response.templates || []
+        const nextTotal = response.total || 0
+        if (page === 1) {
+          setTemplates(newItems)
+        } else {
+          setTemplates(prev => [...prev, ...newItems])
+        }
+        setTotal(nextTotal)
+        const computedHasMore = (page * pageSize) < nextTotal && newItems.length > 0
+        setHasMore(computedHasMore)
       }
     } catch (error) {
       console.error('Failed to load templates:', error)
       toast.error('Failed to load templates')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMoreRef.current) return
+    const el = loadMoreRef.current
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries
+      if (entry.isIntersecting && !loading && !loadingMore && hasMore) {
+        setPage(prev => prev + 1)
+      }
+    }, { root: null, rootMargin: '200px', threshold: 0 })
+    observer.observe(el)
+    return () => observer.unobserve(el)
+  }, [hasMore, loading, loadingMore])
 
   const loadCategories = async () => {
     try {
@@ -446,24 +476,13 @@ const TemplateMarketplacePage = () => {
           </div>
         )}
 
-        {/* Pagination */}
-        <div className="flex justify-center items-center mt-10 gap-3">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="btn-secondary disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="text-muted">Page {page} of {Math.max(1, Math.ceil(total / pageSize))}</span>
-          <button
-            onClick={() => setPage(page + 1)}
-            disabled={page >= Math.ceil(total / pageSize)}
-            className="btn-secondary disabled:opacity-50"
-          >
-            Next
-          </button>
+        {/* Infinite scroll sentinel and loader */}
+        <div className="flex justify-center items-center mt-10">
+          {loadingMore && (
+            <div className="text-muted text-sm">Loading more…</div>
+          )}
         </div>
+        <div ref={loadMoreRef} className="h-10" />
 
         {/* Preview Modal */}
         {showPreview && previewTemplate && (
@@ -551,4 +570,5 @@ const TemplateMarketplacePage = () => {
   )
 }
 
+export default TemplateMarketplacePage
 export default TemplateMarketplacePage
