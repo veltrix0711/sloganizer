@@ -163,4 +163,81 @@ cd backend && railway up
 - Pricing: loads, shows STARTER for free; checkout opens Stripe; back nav with `?canceled=true` cleans URL and page renders.
 - Template marketplace: templates and categories load; favorites require login and work with email fallback.
 
+### Generators (2025-08-15 improvements)
+- Backend endpoints added to prevent 404s:
+  - Names `/api/names/*`, Logos `/api/logos/*`, Social `/api/social/*`
+- Name quality
+  - Backend now uses AI prompts (Claude primary, OpenAI fallback) via `aiService.generateBusinessNames` with strict JSON output and constraints (style, length, distinctiveness, no generic suffixes). Ignores brand kits; uses only Name Generator form inputs.
+  - Frontend guards in `NameCard.jsx` prevent crashes when fields are missing.
+- Social posts quality
+  - New AI path `generateSocialPostsFromSettings` driven by Social Post form (topic, tone, platforms, post type, hashtags) to produce platform-tailored content, replacing generic templates.
+- Guardrails remain: do not break login or navigation; feature-flag future brand-kit integrations.
+
+## Social Post Generator: upgrade plan
+
+- UX changes (frontend)
+  - Add controls to `SocialPostForm.jsx`:
+    - Creativity slider (0.2–1.2) → maps to temperature
+    - Length: short/medium/long per platform (enforced in prompt)
+    - CTA presets: none | shop now | learn more | book demo | sign up
+    - Hashtag density: none | low (1–3) | normal (4–7) | high (8–12)
+    - Emoji usage: none | tasteful | expressive
+    - Structure: hook strength (0–2), body detail (0–2), CTA strength (0–2)
+    - Brand kit toggle + kit selector (optional); defaults off
+  - Display platform-character counts live; warn when over limits.
+
+- API and prompt (backend)
+  - Extend `POST /api/social/generate` request body with:
+    - `creativity:number`, `length:'short'|'medium'|'long'`, `cta:string|null`, `hashtagDensity:'none'|'low'|'normal'|'high'`, `emoji:'none'|'tasteful'|'expressive'`, `structure:{hook:number,body:number,cta:number}`, `brandKitId?:string`
+  - In `aiService.generateSocialPostsFromSettings`:
+    - Map creativity to temperature.
+    - Enforce per-platform max chars and desired length bands; truncate gracefully.
+    - Produce posts keyed by platform with `text`, `hashtags`, and `estimated_chars`.
+    - If `brandKitId` present and `BRAND_KITS_DB_ENABLED==='true'`, fetch kit and include palette, tone, value props, and tagline in prompt context; otherwise ignore.
+  - Rate limiting: reuse existing usage logging; add `service_type='social_posts_v2'`.
+
+- Data and feature flags
+  - No schema change required for MVP. Optional future: `social_presets` table to save user presets.
+  - Flag: `SOCIAL_V2_ENABLED` to toggle new controls server-side if needed.
+
+- Acceptance
+  - Posts vary with sliders; platform limits respected; hashtags/emoji density honored; optional brand kit context applied only when toggled.
+
+## Logo Generator: upgrade plan
+
+- Goal
+  - Replace placeholder images with real AI logos; provide PNG+SVG; minimal disruption to UI.
+
+- Provider and env
+  - Use Stability AI (SD3/Stable Image) for raster generation; env: `STABILITY_API_KEY`.
+  - Optional fallback: OpenAI `gpt-image-1` (`OPENAI_API_KEY`). Feature flag: `LOGO_PROVIDER` in {'stability','openai'}.
+
+- UX changes (frontend)
+  - Extend `LogoGeneratorForm` with:
+    - Style: minimal, geometric, emblem, wordmark, monogram
+    - Keywords (iconography), initials (for monogram), palette (primary/secondary), background (transparent/solid), aspect (1:1, 3:2, 16:9)
+    - Output formats: PNG (required), SVG (attempt vectorize)
+    - Variations: 1–4
+  - Job UI unchanged; show “vectorizing…” step when SVG requested.
+
+- API (backend)
+  - `POST /api/logos/generate` accepts the new fields; creates a job and immediately returns jobId.
+  - Worker logic (inline for MVP via setTimeout; later move to queue):
+    - Call Stability with crafted prompt (style + keywords + constraints like high-contrast, flat, scalable).
+    - Store PNG in Supabase Storage bucket `brand-assets` under `logos/{userId}/{jobId}.png`.
+    - Vectorization: run potrace/imagetracer on PNG to produce SVG (best-effort), store as `...svg`.
+    - Insert row into `brand_assets` (type='logo', urls, meta: palette, style, seed).
+  - New envs: `SUPABASE_STORAGE_BUCKET=brand-assets`, `STABILITY_API_KEY`, optional `OPENAI_API_KEY`.
+
+- Prompting (backend)
+  - Style-aware system prompt: “Design a simple, scalable brand logo... avoid photorealism, ensure clean edges, vector-friendly.”
+  - Enforce transparent background if requested; prefer flat colors; limit text to initials when wordmark not chosen.
+
+- Acceptance
+  - Jobs complete with real PNGs; optional SVG is usable for simple shapes; assets persist; primary logo settable; no 404s.
+
+- Safeguards
+  - Feature flag `LOGOS_REAL_ENABLED`; fallback to current mock when off.
+  - Strict timeouts and error messaging; do not impact auth/nav.
+
 
