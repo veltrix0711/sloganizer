@@ -152,7 +152,7 @@ const TemplateMarketplacePage = () => {
       if (response.success) {
         toast.success('Template applied successfully!')
         // Navigate to generator with template data
-        window.location.href = `/generator?template=${template.id}`
+        window.location.href = `/generate?template=${template.id}`
       }
     } catch (error) {
       console.error('Failed to use template:', error)
