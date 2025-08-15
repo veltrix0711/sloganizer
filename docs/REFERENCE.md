@@ -108,6 +108,50 @@ cd backend && railway up
   - Infinite scroll enabled: appends results when bottom sentinel enters viewport; uses `hasMore`/`loadingMore` guards.
   - Preview modal includes description, sample preview, tags, stats, Use/Upgrade actions; lock overlay on gated templates.
   - Backend `/api/templates/categories` returns counts when DB flag on; otherwise uses mock counts.
+
+### Brand Kits (next major templates upgrade)
+- Goal: Evolve "templates" into complete Brand Kits that provide a ready-to-use brand foundation, not just a slogan.
+- UX
+  - New page emphasis: "Brand Kits" with filters for industry, personality, color theme, tier, includes (voice/social/web copy/logo).
+  - Card shows: kit name, industry/personality, color swatches, font pair, included items badges, rating/downloads, lock if gated.
+  - Preview modal with tabs: Overview, Colors & Fonts, Voice & Messaging, Social Templates, Web Copy, Ads, Assets/Export.
+  - Actions: Use Kit (prefills generator + brand profile), Save (favorite), Export (PDF brandbook, brand tokens JSON), Upgrade.
+- Data model (Supabase)
+  - `brand_kits` (id, title, description, industry, personality, tier, palette hex[], fonts jsonb {primary, secondary, sources},
+    messaging jsonb {tagline, elevator_pitch, value_props[], word_bank[], dos_donts{}}, voice jsonb {tone_guidelines, sample_prompts[]},
+    social jsonb {sample_posts[], hooks[]}, web_copy jsonb {hero, about, features[]}, ads jsonb {headlines[], primary_text[]},
+    assets jsonb {figma_url?, canva_url?, icon_pack_url?, image_prompts_url?}, tags text[], rating numeric, downloads int,
+    is_active bool, created_by, created_at, updated_at)
+  - `brand_kit_categories` (optional) or reuse `template_categories`
+  - `brand_kit_favorites` (user_id, kit_id)
+  - `brand_kit_ratings` (user_id, kit_id, rating)
+  - `brand_kit_tags` (kit_id, tag) or m2m table
+- API (backend)
+  - `GET /api/kits` q/category/tier/personality/color/page/pageSize/sort
+  - `GET /api/kits/:id`
+  - `POST /api/kits/use` → applies kit to user: prefill generator + create/update `profiles` with kit defaults; increments downloads
+  - `GET /api/kits/categories` (with counts)
+  - `GET /api/kits/export/:id?format=brandbook|tokens|tailwind` → PDF/ZIP/JSON
+  - `GET/POST/DELETE /api/kits/favorites`
+  - Feature flag: `BRAND_KITS_DB_ENABLED` (parallel to `TEMPLATES_DB_ENABLED`)
+- Frontend
+  - Reuse marketplace shell: swap content/filters for kits; keep URL state + infinite scroll.
+  - Cards render hero tile: palette swatches + fonts; badges for included sections.
+  - Preview modal shows tabbed content; Download/Export only when allowed by tier.
+  - Use Kit → navigate to `/generate?kit=<id>`; `GeneratorPage` reads kit and prefills form + suggests voice toggle.
+  - Brand Suite widgets consume kit data (voice, palette, fonts) for immediate utility.
+- Exports (phase 2)
+  - Brandbook PDF (messaging + colors/fonts + examples)
+  - Brand tokens JSON (CSS variables, palette, font stacks); optional Tailwind config snippet
+- Phased rollout
+  1) Schema + API + mock kits; UI preview + Use Kit (no export)
+  2) Exports (PDF/tokens), category counts, search facets
+  3) Ratings + sorting by rating/downloads
+  4) Creator pipeline (admin upload JSON kits) and moderation
+  5) Monetization adjustments (tiers, add-ons)
+- Safeguards
+  - Keep existing `/api/templates` working; introduce `/api/kits` side-by-side.
+  - Feature-flagged enablement; fallback to mock kits.
 - Admin
   - `/api/admin/reset-user` protected by `ADMIN_RESET_TOKEN`: cancels subscription, deletes customer, removes profile, attempts auth user deletion.
 - Logs
