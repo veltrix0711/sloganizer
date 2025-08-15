@@ -23,7 +23,8 @@
       "Bash(start update-subscription.html)",
       "Bash(npm run lint)",
       "Bash(ping:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "WebFetch(domain:www.launchzone.space)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
