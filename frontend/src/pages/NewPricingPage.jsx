@@ -89,14 +89,14 @@ const NewPricingPage = () => {
     setLoading(planCode)
 
     try {
-      const response = await api.post('/billing/checkout', {
+      const response = await api.createBillingCheckout({
         planCode,
         successUrl: window.location.origin + '/billing/success',
         cancelUrl: window.location.origin + '/pricing'
       })
 
-      if (response.data.success && response.data.url) {
-        window.location.href = response.data.url
+      if (response.success && response.url) {
+        window.location.href = response.url
       } else {
         throw new Error('Failed to create checkout session')
       }

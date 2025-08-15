@@ -14,6 +14,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sessionLoading, setSessionLoading] = useState(false)
@@ -51,6 +52,7 @@ export const AuthProvider = ({ children }) => {
         } else if (session) {
           console.log('AuthContext: Session found, fetching profile...')
           setUser(session.user)
+          setSession(session)
           await fetchUserProfile(session.user.id)
         } else {
           console.log('AuthContext: No session found')
@@ -84,11 +86,13 @@ export const AuthProvider = ({ children }) => {
         
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setUser(session?.user ?? null)
+          setSession(session)
           if (session?.user) {
             await fetchUserProfile(session.user.id)
           }
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
+          setSession(null)
           setProfile(null)
         }
         
@@ -311,6 +315,7 @@ export const AuthProvider = ({ children }) => {
       // Clear cache and local state first
       profileCache.current = {}
       setUser(null)
+      setSession(null)
       setProfile(null)
       
       // Sign out from Supabase with global scope to clear all sessions
@@ -337,6 +342,7 @@ export const AuthProvider = ({ children }) => {
       
       // Ensure local state is cleared regardless of errors
       setUser(null)
+      setSession(null)
       setProfile(null)
       profileCache.current = {}
       localStorage.removeItem('supabase.auth.token')
@@ -462,6 +468,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    session,
     profile,
     loading,
     sessionLoading,

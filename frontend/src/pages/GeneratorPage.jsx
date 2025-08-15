@@ -13,7 +13,7 @@ import SocialMediaWidget from '../components/Widgets/SocialMediaWidget'
 import CompleteBrandGenerator from '../components/BusinessSuite/CompleteBrandGenerator'
 
 const GeneratorPage = () => {
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const [formData, setFormData] = useState({
     businessName: '',
     industry: '',
@@ -38,10 +38,10 @@ const GeneratorPage = () => {
 
   // Load brand profiles when user is available
   useEffect(() => {
-    if (user) {
+    if (user && session?.access_token) {
       loadBrandProfiles()
     }
-  }, [user])
+  }, [user, session])
 
   // Check voice status when brand profile is selected
   useEffect(() => {
@@ -52,13 +52,19 @@ const GeneratorPage = () => {
 
   const loadBrandProfiles = async () => {
     try {
-      if (!user?.email) {
-        console.log('No user email available for loading brand profiles');
+      if (!session?.access_token) {
+        console.log('No authenticated session available for loading brand profiles');
         return;
       }
 
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_BASE_URL}/api/brand/profiles?email=${encodeURIComponent(user.email)}`)
+      const response = await fetch(`${API_BASE_URL}/api/brand/profiles`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      })
       
       if (response.ok) {
         const data = await response.json()
@@ -76,12 +82,14 @@ const GeneratorPage = () => {
   }
 
   const checkVoiceStatus = async () => {
-    if (!selectedBrandProfile?.id) return
+    if (!selectedBrandProfile?.id || !session?.access_token) return
 
     try {
-      const response = await fetch(`/api/voice-training/profiles/${selectedBrandProfile.id}/status`, {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_BASE_URL}/api/voice-training/profiles/${selectedBrandProfile.id}/status`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         }
       })
 
@@ -150,10 +158,11 @@ const GeneratorPage = () => {
       if (useVoiceTraining && selectedBrandProfile && voiceStatus?.progress?.ready_for_generation) {
         const voicePrompt = `Generate creative slogans for ${formData.businessName.trim()}, a ${formatIndustry(formData.industry)} business with a ${formatPersonality(formData.personality)} personality. ${formData.keywords.length > 0 ? `Include these keywords: ${formData.keywords.join(', ')}.` : ''} ${formData.targetAudience ? `Target audience: ${formData.targetAudience}.` : ''}`
         
-        const voiceResponse = await fetch('/api/voice-training/generate-content', {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const voiceResponse = await fetch(`${API_BASE_URL}/api/voice-training/generate-content`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({

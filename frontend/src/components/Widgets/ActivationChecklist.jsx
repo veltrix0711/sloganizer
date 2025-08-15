@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Circle, ChevronDown, ChevronRight, X, Crown, Sparkles, Target, MessageSquare, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../services/authContext';
 
 const ActivationChecklist = ({ user, onDismiss }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -14,21 +15,29 @@ const ActivationChecklist = ({ user, onDismiss }) => {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && session?.access_token) {
       loadChecklistProgress();
     }
-  }, [user]);
+  }, [user, session]);
+
+  const { session } = useAuth();
 
   const loadChecklistProgress = async () => {
     try {
-      if (!user?.email) {
-        console.log('No user email available');
+      if (!session?.access_token) {
+        console.log('No authenticated session available');
         return;
       }
 
       // Check for brand profiles
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const profilesResponse = await fetch(`${API_BASE_URL}/api/brand/profiles?email=${encodeURIComponent(user.email)}`);
+      const profilesResponse = await fetch(`${API_BASE_URL}/api/brand/profiles`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (profilesResponse.ok) {
         const profilesData = await profilesResponse.json();
@@ -39,7 +48,13 @@ const ActivationChecklist = ({ user, onDismiss }) => {
         if (hasProfiles) {
           for (const profile of profilesData.profiles) {
             try {
-              const voiceResponse = await fetch(`${API_BASE_URL}/api/voice-training/profiles/${profile.id}/status?email=${encodeURIComponent(user.email)}`);
+              const voiceResponse = await fetch(`${API_BASE_URL}/api/voice-training/profiles/${profile.id}/status`, {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${session.access_token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
               if (voiceResponse.ok) {
                 const voiceData = await voiceResponse.json();
                 if (voiceData.progress?.analyzed_samples > 0) {
