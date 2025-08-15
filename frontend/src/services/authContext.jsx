@@ -65,11 +65,12 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging (soft fail, never auto-signout)
+    const TIMEOUT_MS = 15000
     const sessionTimeout = setTimeout(() => {
-      console.warn('AuthContext: Session loading timed out, setting loading to false')
+      console.info('AuthContext: Session load timed out; showing signed-out UI but NOT calling signOut')
       setLoading(false)
-    }, 8000) // 8 second timeout - allow more time for slow connections
+    }, TIMEOUT_MS)
 
     getSession().then(() => {
       clearTimeout(sessionTimeout)
@@ -81,23 +82,20 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, nextSession) => {
         setSessionLoading(true)
-        
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setUser(session?.user ?? null)
-          setSession(session)
-          if (session?.user) {
-            await fetchUserProfile(session.user.id)
-          }
-        } else if (event === 'SIGNED_OUT') {
+        setSession(nextSession)
+        const nextUserId = nextSession?.user?.id
+        if (nextUserId) {
+          setUser(nextSession.user)
+          await fetchUserProfile(nextUserId)
+          setLoading(false)
+        } else {
           setUser(null)
-          setSession(null)
           setProfile(null)
+          setLoading(false)
         }
-        
         setSessionLoading(false)
-        setLoading(false)
       }
     )
 

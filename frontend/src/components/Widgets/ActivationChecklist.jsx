@@ -14,15 +14,9 @@ const ActivationChecklist = ({ user, onDismiss }) => {
     hasSavedFavorite: false
   });
 
-  useEffect(() => {
-    if (user && session?.access_token) {
-      loadChecklistProgress();
-    }
-  }, [user, session]);
-
   const { session } = useAuth();
 
-  const loadChecklistProgress = async () => {
+  async function loadChecklistProgress() {
     try {
       if (!session?.access_token) {
         console.log('No authenticated session available');
@@ -86,6 +80,12 @@ const ActivationChecklist = ({ user, onDismiss }) => {
       console.error('Error loading checklist progress:', error);
     }
   };
+
+  useEffect(() => {
+    if (user && session?.access_token) {
+      loadChecklistProgress();
+    }
+  }, [user, session]);
 
   const markCompleted = (action) => {
     const updatedData = { ...checklistData, [action]: true };
@@ -163,9 +163,11 @@ const ActivationChecklist = ({ user, onDismiss }) => {
     }
   ];
 
-  const completedCount = checklistItems.filter(item => item.completed).length;
-  const totalPoints = checklistItems.filter(item => item.completed).reduce((sum, item) => sum + item.points, 0);
-  const completionPercentage = Math.round((completedCount / checklistItems.length) * 100);
+  const completedCount = checklistItems.filter((item) => item.completed).length;
+  const totalPoints = checklistItems.filter((item) => item.completed).reduce((sum, item) => sum + item.points, 0);
+  const completionPercentage = checklistItems.length > 0
+    ? Math.round((completedCount / checklistItems.length) * 100)
+    : 0;
 
   if (!user) return null;
 

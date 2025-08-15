@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Check, 
@@ -25,22 +25,25 @@ const NewPricingPage = () => {
   const [currentPlan, setCurrentPlan] = useState(null)
   const [selectedProTier, setSelectedProTier] = useState('PRO_500')
   const [planLoading, setPlanLoading] = useState(true)
+  const hasFetchedRef = useRef(false)
 
   useEffect(() => {
-    if (!authLoading) {
-      if (user) {
-        fetchCurrentSubscription()
-      } else {
-        setCurrentPlan(null)
-        setPlanLoading(false)
-      }
+    if (authLoading) return
+    if (!user?.id) {
+      setCurrentPlan(null)
+      setPlanLoading(false)
+      hasFetchedRef.current = false
+      return
     }
-  }, [user, profile, authLoading])
+    if (hasFetchedRef.current) return
+    hasFetchedRef.current = true
+    fetchCurrentSubscription()
+  }, [user?.id, authLoading])
 
   // Map subscription tiers to plan codes
   const getUserPlanCode = () => {
     const tier = currentPlan || profile?.subscription_plan
-    if (!tier) return null
+    if (!tier) return 'STARTER'
     
     const tierMapping = {
       'free': 'STARTER',
@@ -51,7 +54,7 @@ const NewPricingPage = () => {
       'premium': 'AGENCY'
     }
     
-    return tierMapping[tier.toLowerCase()] || null
+    return tierMapping[tier.toLowerCase()] || 'STARTER'
   }
 
   const userPlanCode = getUserPlanCode()
