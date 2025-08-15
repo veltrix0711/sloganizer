@@ -571,4 +571,3 @@ const TemplateMarketplacePage = () => {
 }
 
 export default TemplateMarketplacePage
-export default TemplateMarketplacePage
