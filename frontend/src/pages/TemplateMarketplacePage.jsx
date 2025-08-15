@@ -13,7 +13,9 @@ import {
   Clock,
   CheckCircle,
   Plus,
-  ArrowRight
+  ArrowRight,
+  Lock,
+  X
 } from 'lucide-react'
 import { useAuth } from '../services/authContext'
 import api from '../services/api'
@@ -32,6 +34,8 @@ const TemplateMarketplacePage = () => {
   const [page, setPage] = useState(parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10))
   const pageSize = 24
   const [favorites, setFavorites] = useState(new Set())
+  const [showPreview, setShowPreview] = useState(false)
+  const [previewTemplate, setPreviewTemplate] = useState(null)
 
   // Sync URL from state
   useEffect(() => {
@@ -126,6 +130,16 @@ const TemplateMarketplacePage = () => {
     }
   }
 
+  const openPreview = (template) => {
+    setPreviewTemplate(template)
+    setShowPreview(true)
+  }
+
+  const closePreview = () => {
+    setShowPreview(false)
+    setPreviewTemplate(null)
+  }
+
   const handleToggleFavorite = async (templateId) => {
     if (!user) {
       toast.error('Please sign in to save favorites')
@@ -205,24 +219,29 @@ const TemplateMarketplacePage = () => {
                 type="text"
                 placeholder="Search templates..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setPage(1); setSearchTerm(e.target.value) }}
                 className="w-full pl-10 pr-4 py-2 bg-space border border-electric/20 rounded-lg text-heading placeholder-muted focus:outline-none focus:ring-2 focus:ring-electric"
               />
             </div>
 
-            {/* Category Filter */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-space border border-electric/20 text-heading px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-electric"
-            >
-              <option value="all">All Categories</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            {/* Category Filter (chips) */}
+            <div className="flex-1 overflow-x-auto">
+              <div className="flex items-center gap-2 min-w-max">
+                {[{ id: 'all', name: 'All', count: total }, ...categories].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => { setPage(1); setSelectedCategory(cat.id) }}
+                    className={`px-3 py-1 rounded-full border transition-colors whitespace-nowrap ${
+                      (selectedCategory === cat.id)
+                        ? 'border-electric/40 bg-electric/10 text-electric'
+                        : 'border-electric/20 text-muted hover:text-heading hover:bg-space'
+                    }`}
+                  >
+                    {cat.name}{typeof cat.count === 'number' ? ` (${cat.count})` : ''}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Tier Filter */}
             <select
@@ -239,7 +258,7 @@ const TemplateMarketplacePage = () => {
             {/* Sort */}
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => { setPage(1); setSortBy(e.target.value) }}
               className="bg-space border border-electric/20 text-heading px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-electric"
             >
               <option value="popular">Most Popular</option>
@@ -271,7 +290,7 @@ const TemplateMarketplacePage = () => {
         {filteredTemplates.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredTemplates.map((template) => (
-              <div key={template.id} className="card-primary group hover:shadow-lg transition-all duration-200">
+              <div key={template.id} className="card-primary group hover:shadow-lg transition-all duration-200 relative overflow-hidden">
                 {/* Template Header */}
                 <div className="relative mb-4">
                   <div className="flex items-start justify-between">
@@ -363,15 +382,30 @@ const TemplateMarketplacePage = () => {
                       onClick={() => window.location.href = '/pricing'}
                       className="flex-1 btn-secondary text-sm py-2 flex items-center justify-center"
                     >
-                      <Star className="h-4 w-4 mr-1" />
+                      <Lock className="h-4 w-4 mr-1" />
                       Upgrade to Use
                     </button>
                   )}
-                  
-                  <button className="btn-secondary px-3 py-2 text-sm">
+
+                  <button className="btn-secondary px-3 py-2 text-sm" onClick={() => openPreview(template)}>
                     <Eye className="h-4 w-4" />
                   </button>
                 </div>
+
+                {/* Lock overlay for non-eligible users */}
+                {isPremiumTemplate(template) && !canUseTemplate(template) && (
+                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="text-center">
+                      <Lock className="h-6 w-6 text-white mx-auto mb-2" />
+                      <button
+                        className="btn-primary text-xs"
+                        onClick={() => window.location.href = '/pricing'}
+                      >
+                        Upgrade to unlock
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
