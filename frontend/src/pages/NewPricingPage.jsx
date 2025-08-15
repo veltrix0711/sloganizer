@@ -110,8 +110,17 @@ const NewPricingPage = () => {
     setLoading(planCode)
 
     try {
+      // Map planCode to priceId based on env-backed price IDs
+      const priceMap = {
+        PRO_50: import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID || undefined,
+        PRO_200: import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID || undefined,
+        PRO_500: import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID || undefined,
+        AGENCY: import.meta.env.VITE_STRIPE_AGENCY_MONTHLY_PRICE_ID || undefined
+      }
+      const priceId = priceMap[planCode]
       const response = await api.createBillingCheckout({
-        planCode,
+        planId: planCode,
+        priceId,
         successUrl: window.location.origin + '/billing/success',
         cancelUrl: window.location.origin + '/pricing'
       })
