@@ -243,17 +243,27 @@ const TemplateMarketplacePage = () => {
               </div>
             </div>
 
-            {/* Tier Filter */}
-            <select
-              value={tier}
-              onChange={(e) => { setPage(1); setTier(e.target.value) }}
-              className="bg-space border border-electric/20 text-heading px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-electric"
-            >
-              <option value="all">All tiers</option>
-              <option value="free">Free</option>
-              <option value="pro">Pro</option>
-              <option value="enterprise">Enterprise</option>
-            </select>
+            {/* Tier Filter (chips) */}
+            <div className="flex items-center gap-2">
+              {[
+                { id: 'all', name: 'All tiers' },
+                { id: 'free', name: 'Free' },
+                { id: 'pro', name: 'Pro' },
+                { id: 'enterprise', name: 'Enterprise' }
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => { setPage(1); setTier(t.id) }}
+                  className={`px-3 py-1 rounded-full border transition-colors whitespace-nowrap ${
+                    (tier === t.id)
+                      ? 'border-electric/40 bg-electric/10 text-electric'
+                      : 'border-electric/20 text-muted hover:text-heading hover:bg-space'
+                  }`}
+                >
+                  {t.name}
+                </button>
+              ))}
+            </div>
 
             {/* Sort */}
             <select
@@ -282,6 +292,14 @@ const TemplateMarketplacePage = () => {
                 <Heart className="h-4 w-4 mr-1 text-red-400" />
                 {favorites.size} favorites
               </div>
+              {(searchTerm || selectedCategory !== 'all' || tier !== 'all' || sortBy !== 'popular' || page > 1) && (
+                <button
+                  onClick={() => { setSearchTerm(''); setSelectedCategory('all'); setTier('all'); setSortBy('popular'); setPage(1) }}
+                  className="px-3 py-1 rounded-full border border-electric/20 text-muted hover:text-heading hover:bg-space"
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -446,6 +464,62 @@ const TemplateMarketplacePage = () => {
             Next
           </button>
         </div>
+
+        {/* Preview Modal */}
+        {showPreview && previewTemplate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60" onClick={closePreview} />
+            <div className="relative z-10 w-full max-w-2xl mx-4 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl">
+              <div className="flex items-center justify-between p-4 border-b border-slate-700">
+                <div className="flex items-center gap-2">
+                  {isPremiumTemplate(previewTemplate) && (
+                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                      {previewTemplate.tier === 'enterprise' ? 'Enterprise' : 'Pro'}
+                    </div>
+                  )}
+                  <h3 className="text-white font-semibold">{previewTemplate.title}</h3>
+                </div>
+                <button onClick={closePreview} className="p-2 text-slate-400 hover:text-white">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-5 space-y-4">
+                <p className="text-body">{previewTemplate.description}</p>
+                <div className="bg-space/50 rounded-lg p-4">
+                  <p className="text-heading font-medium text-center italic">
+                    "{previewTemplate.preview || 'Sample slogan preview...'}"
+                  </p>
+                </div>
+                {previewTemplate.tags?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {previewTemplate.tags.map((tag, i) => (
+                      <span key={i} className="px-2 py-1 bg-electric/10 text-electric text-xs rounded-full">{tag}</span>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="flex items-center justify-between text-xs text-muted">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1"><Download className="h-3 w-3" />{previewTemplate.downloads || 0}</span>
+                    <span className="flex items-center gap-1"><Star className="h-3 w-3" />{previewTemplate.rating || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(previewTemplate.created_at).toLocaleDateString()}</div>
+                </div>
+              </div>
+              <div className="p-4 border-t border-slate-700 flex items-center gap-3">
+                {canUseTemplate(previewTemplate) ? (
+                  <button className="btn-primary flex items-center" onClick={() => handleUseTemplate(previewTemplate)}>
+                    <Zap className="h-4 w-4 mr-2" /> Use Template
+                  </button>
+                ) : (
+                  <button className="btn-secondary flex items-center" onClick={() => window.location.href = '/pricing'}>
+                    <Lock className="h-4 w-4 mr-2" /> Upgrade to Use
+                  </button>
+                )}
+                <button className="btn-secondary ml-auto" onClick={closePreview}>Close</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Pro Callout */}
         {profile?.subscription_plan === 'free' && (
