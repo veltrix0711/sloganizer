@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { 
   Search, 
   Filter, 
@@ -23,12 +23,28 @@ const TemplateMarketplacePage = () => {
   const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [templates, setTemplates] = useState([])
-  const [filteredTemplates, setFilteredTemplates] = useState([])
+  const [total, setTotal] = useState(0)
   const [categories, setCategories] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sortBy, setSortBy] = useState('popular')
+  const [searchTerm, setSearchTerm] = useState(new URLSearchParams(window.location.search).get('q') || '')
+  const [selectedCategory, setSelectedCategory] = useState(new URLSearchParams(window.location.search).get('category') || 'all')
+  const [sortBy, setSortBy] = useState(new URLSearchParams(window.location.search).get('sort') || 'popular')
+  const [tier, setTier] = useState(new URLSearchParams(window.location.search).get('tier') || 'all')
+  const [page, setPage] = useState(parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10))
+  const pageSize = 24
   const [favorites, setFavorites] = useState(new Set())
+
+  // Sync URL from state
+  useEffect(() => {
+    const p = new URLSearchParams()
+    if (searchTerm) p.set('q', searchTerm)
+    if (selectedCategory && selectedCategory !== 'all') p.set('category', selectedCategory)
+    if (tier && tier !== 'all') p.set('tier', tier)
+    if (sortBy && sortBy !== 'popular') p.set('sort', sortBy)
+    if (page > 1) p.set('page', String(page))
+    const qs = p.toString()
+    const url = window.location.pathname + (qs ? `?${qs}` : '')
+    window.history.replaceState({}, '', url)
+  }, [searchTerm, selectedCategory, tier, sortBy, page])
 
   useEffect(() => {
     loadTemplates()
@@ -36,16 +52,28 @@ const TemplateMarketplacePage = () => {
     loadFavorites()
   }, [])
 
+  // Refetch when filters change
   useEffect(() => {
-    filterTemplates()
-  }, [templates, searchTerm, selectedCategory, sortBy])
+    const handler = setTimeout(() => {
+      loadTemplates()
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [searchTerm, selectedCategory, tier, sortBy, page])
 
   const loadTemplates = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/api/templates')
+      const params = new URLSearchParams()
+      if (searchTerm) params.set('q', searchTerm)
+      if (selectedCategory && selectedCategory !== 'all') params.set('category', selectedCategory)
+      if (tier && tier !== 'all') params.set('tier', tier)
+      if (sortBy) params.set('sort', sortBy)
+      params.set('page', String(page))
+      params.set('pageSize', String(pageSize))
+      const response = await api.get(`/api/templates?${params.toString()}`)
       if (response.success) {
-        setTemplates(response.templates)
+        setTemplates(response.templates || [])
+        setTotal(response.total || 0)
       }
     } catch (error) {
       console.error('Failed to load templates:', error)
@@ -69,7 +97,7 @@ const TemplateMarketplacePage = () => {
   const loadFavorites = async () => {
     if (!user) return
     try {
-      const response = await api.get('/api/templates/favorites')
+      const response = await api.get(`/api/templates/favorites${user?.email ? `?email=${encodeURIComponent(user.email)}` : ''}`)
       if (response.success) {
         setFavorites(new Set(response.favoriteIds))
       }
@@ -78,41 +106,7 @@ const TemplateMarketplacePage = () => {
     }
   }
 
-  const filterTemplates = () => {
-    let filtered = [...templates]
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(template => 
-        template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(template => template.category === selectedCategory)
-    }
-
-    // Sort templates
-    switch (sortBy) {
-      case 'popular':
-        filtered.sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
-        break
-      case 'newest':
-        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        break
-      case 'rating':
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        break
-      case 'alphabetical':
-        filtered.sort((a, b) => a.title.localeCompare(b.title))
-        break
-    }
-
-    setFilteredTemplates(filtered)
-  }
+  const filteredTemplates = useMemo(() => templates, [templates])
 
   const handleUseTemplate = async (template) => {
     try {
@@ -142,7 +136,7 @@ const TemplateMarketplacePage = () => {
       const isFavorite = favorites.has(templateId)
       
       if (isFavorite) {
-        await api.delete(`/api/templates/favorites/${templateId}`)
+        await api.delete(`/api/templates/favorites/${templateId}${user?.email ? `?email=${encodeURIComponent(user.email)}` : ''}`)
         setFavorites(prev => {
           const newSet = new Set(prev)
           newSet.delete(templateId)
@@ -150,7 +144,7 @@ const TemplateMarketplacePage = () => {
         })
         toast.success('Removed from favorites')
       } else {
-        await api.post('/api/templates/favorites', { templateId })
+        await api.post('/api/templates/favorites', { templateId, email: user?.email })
         setFavorites(prev => new Set([...prev, templateId]))
         toast.success('Added to favorites')
       }
@@ -230,6 +224,18 @@ const TemplateMarketplacePage = () => {
               ))}
             </select>
 
+            {/* Tier Filter */}
+            <select
+              value={tier}
+              onChange={(e) => { setPage(1); setTier(e.target.value) }}
+              className="bg-space border border-electric/20 text-heading px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-electric"
+            >
+              <option value="all">All tiers</option>
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+
             {/* Sort */}
             <select
               value={sortBy}
@@ -246,7 +252,7 @@ const TemplateMarketplacePage = () => {
           {/* Stats */}
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-electric/10">
             <p className="text-muted text-sm">
-              Showing {filteredTemplates.length} of {templates.length} templates
+              Showing {filteredTemplates.length} of {total} templates
             </p>
             <div className="flex items-center space-x-4 text-sm text-muted">
               <div className="flex items-center">
@@ -387,6 +393,25 @@ const TemplateMarketplacePage = () => {
             </button>
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-10 gap-3">
+          <button
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            className="btn-secondary disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-muted">Page {page} of {Math.max(1, Math.ceil(total / pageSize))}</span>
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(total / pageSize)}
+            className="btn-secondary disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
 
         {/* Pro Callout */}
         {profile?.subscription_plan === 'free' && (
