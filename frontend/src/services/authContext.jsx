@@ -20,29 +20,25 @@ export const AuthProvider = ({ children }) => {
   const [sessionLoading, setSessionLoading] = useState(false)
 
   useEffect(() => {
-    // Test Supabase connection first
-    const testConnection = async () => {
-      try {
-        console.log('AuthContext: Testing Supabase connection...')
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id')
-          .limit(1)
-        
-        if (error) {
-          console.error('AuthContext: Supabase connection test failed:', error)
-        } else {
-          console.log('AuthContext: Supabase connection successful')
-        }
-      } catch (error) {
-        console.error('AuthContext: Supabase connection error:', error)
-      }
+    // Optional connection test (non-blocking)
+    const testConnection = () => {
+      console.log('AuthContext: Testing Supabase connection...')
+      supabase
+        .from('profiles')
+        .select('id')
+        .limit(1)
+        .then(({ error }) => {
+          if (error) console.error('AuthContext: Supabase connection test failed:', error)
+          else console.log('AuthContext: Supabase connection successful')
+        })
+        .catch((error) => console.error('AuthContext: Supabase connection error:', error))
     }
 
     // Get initial session
     const getSession = async () => {
       try {
-        await testConnection()
+        // fire-and-forget connection test
+        testConnection()
         
         console.log('AuthContext: Getting initial session...')
         const { data: { session }, error } = await supabase.auth.getSession()
@@ -53,7 +49,10 @@ export const AuthProvider = ({ children }) => {
           console.log('AuthContext: Session found, fetching profile...')
           setUser(session.user)
           setSession(session)
-          await fetchUserProfile(session.user.id)
+          // fetch profile without blocking initial load
+          fetchUserProfile(session.user.id).catch((e) => {
+            console.warn('AuthContext: fetchUserProfile (initial) error:', e)
+          })
         } else {
           console.log('AuthContext: No session found')
         }
@@ -65,18 +64,9 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Add timeout to prevent hanging (soft fail, never auto-signout)
-    const TIMEOUT_MS = 15000
-    const sessionTimeout = setTimeout(() => {
-      console.info('AuthContext: Session load timed out; showing signed-out UI but NOT calling signOut')
-      setLoading(false)
-    }, TIMEOUT_MS)
-
-    getSession().then(() => {
-      clearTimeout(sessionTimeout)
-    }).catch((error) => {
+    // Initialize session; rely on onAuthStateChange as source of truth
+    getSession().catch((error) => {
       console.error('AuthContext: Error in getSession:', error)
-      clearTimeout(sessionTimeout)
       setLoading(false)
     })
 
@@ -138,7 +128,7 @@ export const AuthProvider = ({ children }) => {
       
       // Create AbortController for better timeout handling
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 8000) // 8 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 12000) // 12 second timeout
       
       try {
         const { data, error } = await supabase
