@@ -102,6 +102,12 @@ cd backend && railway up
 - Templates favorites
   - Backend `templates` routes attempt to attach user from Authorization if present; also accept `email` in query/body.
   - Frontend passes `?email=` for GET/DELETE and `{ email }` for POST to avoid 401 when token absent.
+- Template Marketplace
+  - URL-driven filters: `q`, `category`, `tier`, `sort`, `page` persisted via `history.replaceState`.
+  - Category chips replace dropdown; tier chips implemented; clear-filters chip shown when any filter active.
+  - Infinite scroll enabled: appends results when bottom sentinel enters viewport; uses `hasMore`/`loadingMore` guards.
+  - Preview modal includes description, sample preview, tags, stats, Use/Upgrade actions; lock overlay on gated templates.
+  - Backend `/api/templates/categories` returns counts when DB flag on; otherwise uses mock counts.
 - Admin
   - `/api/admin/reset-user` protected by `ADMIN_RESET_TOKEN`: cancels subscription, deletes customer, removes profile, attempts auth user deletion.
 - Logs
