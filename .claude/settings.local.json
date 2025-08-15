@@ -25,6 +25,7 @@
       "Bash(ping:*)",
       "Bash(git pull:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

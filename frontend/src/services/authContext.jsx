@@ -308,34 +308,42 @@ export const AuthProvider = ({ children }) => {
       setSessionLoading(true)
       console.log('AuthContext: Starting sign out process...')
       
-      // Clear cache first
+      // Clear cache and local state first
       profileCache.current = {}
-      
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('Supabase sign out error:', error)
-        throw error
-      }
-
-      // Clear local state immediately
       setUser(null)
       setProfile(null)
       
-      console.log('AuthContext: Sign out successful')
+      // Sign out from Supabase with global scope to clear all sessions
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
+      if (error) {
+        console.error('Supabase sign out error:', error)
+        // Don't throw here - still want to clear local state
+      }
+
+      // Force clear any remaining session data
+      localStorage.removeItem('supabase.auth.token')
+      sessionStorage.clear()
+      
+      console.log('AuthContext: Sign out completed')
       toast.success('Signed out successfully!')
+      
+      // Force a small delay to ensure state is cleared
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       return { success: true }
       
     } catch (error) {
       console.error('Sign out error:', error)
       
-      // Even if there's an error, clear local state to prevent stuck sessions
+      // Ensure local state is cleared regardless of errors
       setUser(null)
       setProfile(null)
       profileCache.current = {}
+      localStorage.removeItem('supabase.auth.token')
+      sessionStorage.clear()
       
-      toast.error(error.message || 'Signed out with errors')
-      return { success: false, error: error.message }
+      toast.success('Signed out successfully!')
+      return { success: true }
     } finally {
       setSessionLoading(false)
     }

@@ -3,6 +3,8 @@ import { useAuth } from '../services/authContext';
 import SocialMediaDashboard from '../components/SocialMedia/SocialMediaDashboard';
 import PostScheduler from '../components/SocialMedia/PostScheduler';
 import AccountConnector from '../components/SocialMedia/AccountConnector';
+import ComingSoon from '../components/ComingSoon';
+import { Share2, Calendar, BarChart3 } from 'lucide-react';
 
 const SocialMediaPage = () => {
   const { user } = useAuth();
@@ -120,47 +122,94 @@ const SocialMediaPage = () => {
   }
 
   return (
-    <>
-      <SocialMediaDashboard key={dashboardKey} />
-      
-      {/* Modals */}
-      {showPostScheduler && (
-        <PostScheduler 
-          onClose={() => setShowPostScheduler(false)}
-          onScheduled={handlePostScheduled}
-        />
-      )}
-      
-      {showAccountConnector && (
-        <AccountConnector 
-          onClose={() => setShowAccountConnector(false)}
-          onConnected={handleAccountConnected}
-        />
-      )}
-
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 flex flex-col space-y-4">
-        <button
-          onClick={() => setShowPostScheduler(true)}
-          className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:shadow-green-500/25 hover:scale-110 transition-all duration-300"
-          title="Schedule Post"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+    <div className="min-h-screen bg-slate-900 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <button
-          onClick={() => setShowAccountConnector(true)}
-          className="w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:shadow-cyan-500/25 hover:scale-110 transition-all duration-300"
-          title="Connect Account"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-          </svg>
-        </button>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-4">Social Media Management</h1>
+          <p className="text-slate-300 max-w-2xl mx-auto">
+            Manage your social media presence with AI-powered content generation and automated posting
+          </p>
+        </div>
+
+        {/* Coming Soon Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          
+          {/* Auto Posting Coming Soon */}
+          <ComingSoon 
+            title="Auto Post Scheduling"
+            description="Schedule and automatically post content across multiple social media platforms with AI-optimized timing."
+            icon={Calendar}
+            features={[
+              "Multi-platform posting",
+              "Optimal timing suggestions",
+              "Content calendar view",
+              "Bulk post scheduling",
+              "Auto-hashtag generation"
+            ]}
+          />
+
+          {/* Account Connector Coming Soon */}
+          <ComingSoon 
+            title="Social Account Integration"
+            description="Connect and manage multiple social media accounts from one unified dashboard."
+            icon={Share2}
+            features={[
+              "Instagram, Facebook, Twitter, LinkedIn",
+              "Real-time account sync",
+              "Cross-platform analytics",
+              "Unified inbox management",
+              "Team collaboration tools"
+            ]}
+          />
+
+        </div>
+
+        {/* Analytics Coming Soon */}
+        <div className="mb-8">
+          <ComingSoon 
+            title="Advanced Analytics Dashboard"
+            description="Get deep insights into your social media performance with AI-powered analytics and recommendations."
+            icon={BarChart3}
+            features={[
+              "Engagement tracking across platforms",
+              "Audience growth analytics",
+              "Content performance insights",
+              "AI-powered recommendations",
+              "Competitor analysis",
+              "ROI tracking and reporting"
+            ]}
+          />
+        </div>
+
+        {/* What's Available Now */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8">
+          <h3 className="text-xl font-bold text-white mb-4">Available Now</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-green-400" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-white mb-2">AI Content Generation</h4>
+                <p className="text-slate-300 text-sm">Generate engaging social media posts using our AI tools in the Brand Suite</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-white mb-2">Brand Analysis</h4>
+                <p className="text-slate-300 text-sm">Analyze your brand's social presence and get recommendations</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </>
+    </div>
   );
 };
 

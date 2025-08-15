@@ -129,8 +129,9 @@ const NewPricingPage = () => {
         { text: 'Brand Kit (colors, fonts, logos)', icon: <Star className="h-4 w-4" /> },
         { text: 'Smart Scheduler', icon: <Clock className="h-4 w-4" /> },
         { text: 'Basic analytics', icon: <TrendingUp className="h-4 w-4" /> },
+        { text: 'Template Marketplace access', icon: <Star className="h-4 w-4" /> },
       ],
-      comingSoon: ['Template Marketplace'],
+      comingSoon: [],
       cta: 'Start 7-day free trial',
       popular: false,
     }
@@ -395,6 +396,10 @@ const NewPricingPage = () => {
                 <Check className="h-5 w-5 text-teal mr-3" />
                 <span className="text-body">API/Webhooks Access</span>
               </li>
+              <li className="flex items-center">
+                <Check className="h-5 w-5 text-teal mr-3" />
+                <span className="text-body">AI Strategy Tools</span>
+              </li>
               {selectedProTier !== 'PRO_50' && (
                 <>
                   <li className="flex items-center">
@@ -504,6 +509,10 @@ const NewPricingPage = () => {
               <li className="flex items-center">
                 <Check className="h-5 w-5 text-orange mr-4 flex-shrink-0" />
                 <span className="text-body">Team approvals & roles</span>
+              </li>
+              <li className="flex items-center">
+                <Check className="h-5 w-5 text-orange mr-4 flex-shrink-0" />
+                <span className="text-body">Full AI Strategy Tools Suite</span>
               </li>
             </ul>
             
