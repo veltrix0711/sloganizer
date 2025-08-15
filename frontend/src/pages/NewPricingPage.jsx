@@ -20,18 +20,22 @@ import api from '../services/api'
 import toast from 'react-hot-toast'
 
 const NewPricingPage = () => {
-  const { user, profile } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(null)
   const [currentPlan, setCurrentPlan] = useState(null)
   const [selectedProTier, setSelectedProTier] = useState('PRO_500')
+  const [planLoading, setPlanLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
-      fetchCurrentSubscription()
-    } else {
-      setCurrentPlan(null)
+    if (!authLoading) {
+      if (user) {
+        fetchCurrentSubscription()
+      } else {
+        setCurrentPlan(null)
+        setPlanLoading(false)
+      }
     }
-  }, [user, profile])
+  }, [user, profile, authLoading])
 
   // Map subscription tiers to plan codes
   const getUserPlanCode = () => {
@@ -55,23 +59,37 @@ const NewPricingPage = () => {
 
   const fetchCurrentSubscription = async () => {
     try {
+      setPlanLoading(true)
+      
       // Use profile data first if available for faster loading
       if (profile?.subscription_plan) {
+        console.log('Using profile subscription plan:', profile.subscription_plan)
         setCurrentPlan(profile.subscription_plan)
+        setPlanLoading(false)
         return
       }
       
+      console.log('Fetching subscription status from API...')
       const response = await api.getSubscriptionStatus()
       if (response.success && response.subscription) {
         console.log('Subscription response:', response.subscription)
         setCurrentPlan(response.subscription.tier || response.subscription.plan)
+      } else {
+        console.log('No subscription found, setting to free')
+        setCurrentPlan('free')
       }
     } catch (error) {
       console.error('Error fetching subscription:', error)
       // Fallback to profile data
       if (profile?.subscription_plan) {
+        console.log('Using profile fallback:', profile.subscription_plan)
         setCurrentPlan(profile.subscription_plan)
+      } else {
+        console.log('No profile data, defaulting to free')
+        setCurrentPlan('free')
       }
+    } finally {
+      setPlanLoading(false)
     }
   }
 
@@ -180,6 +198,20 @@ const NewPricingPage = () => {
   }
 
   const selectedPro = proPlans[selectedProTier]
+
+  // Show loading state while determining plan
+  if (authLoading || planLoading) {
+    return (
+      <div className="min-h-screen bg-night flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-grad-surge rounded-xl flex items-center justify-center shadow-glow-teal mx-auto mb-4">
+            <Building className="h-8 w-8 text-white animate-pulse" />
+          </div>
+          <p className="text-body">Loading pricing plans...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-night py-16 relative overflow-hidden">

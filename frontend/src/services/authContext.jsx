@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     const sessionTimeout = setTimeout(() => {
       console.warn('AuthContext: Session loading timed out, setting loading to false')
       setLoading(false)
-    }, 3000) // 3 second timeout - faster loading
+    }, 8000) // 8 second timeout - allow more time for slow connections
 
     getSession().then(() => {
       clearTimeout(sessionTimeout)
@@ -126,6 +126,12 @@ export const AuthProvider = ({ children }) => {
       // Prevent concurrent fetches for the same user
       if (fetchingProfiles.current.has(userId)) {
         console.log('AuthContext: Profile fetch already in progress for:', userId)
+        // Wait for ongoing fetch instead of returning null
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        if (profileCache.current[userId]) {
+          setProfile(profileCache.current[userId])
+          return profileCache.current[userId]
+        }
         return null
       }
 
@@ -134,7 +140,7 @@ export const AuthProvider = ({ children }) => {
       
       // Create AbortController for better timeout handling
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 4000) // 4 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000) // 8 second timeout
       
       try {
         const { data, error } = await supabase
