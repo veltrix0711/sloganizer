@@ -41,17 +41,17 @@ const NameCard = ({ name, onToggleFavorite, onClaim, onDelete }) => {
   };
 
   const getDomainStatusColor = () => {
-    if (domain_available === null) return 'bg-gray-100 text-gray-600';
+    if (domain_available == null) return 'bg-gray-100 text-gray-600';
     return domain_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   };
 
   const getDomainStatusIcon = () => {
-    if (domain_available === null) return <Clock className="w-3 h-3" />;
+    if (domain_available == null) return <Clock className="w-3 h-3" />;
     return domain_available ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />;
   };
 
   const getDomainStatusText = () => {
-    if (domain_available === null) return 'Checking...';
+    if (domain_available == null) return 'Checking...';
     return domain_available ? 'Available' : 'Unavailable';
   };
 
@@ -111,9 +111,11 @@ const NameCard = ({ name, onToggleFavorite, onClaim, onDelete }) => {
             </div>
             
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStyleColor(style)}`}>
-                {style.charAt(0).toUpperCase() + style.slice(1)}
-              </span>
+              {typeof style === 'string' && style.length > 0 && (
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStyleColor(style)}`}>
+                  {style.charAt(0).toUpperCase() + style.slice(1)}
+                </span>
+              )}
               
               {niche && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
