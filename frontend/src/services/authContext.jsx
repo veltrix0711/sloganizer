@@ -78,7 +78,10 @@ export const AuthProvider = ({ children }) => {
         const nextUserId = nextSession?.user?.id
         if (nextUserId) {
           setUser(nextSession.user)
-          await fetchUserProfile(nextUserId)
+          // Fire-and-forget profile fetch to avoid blocking UI
+          fetchUserProfile(nextUserId).catch((e) => {
+            console.warn('AuthContext: fetchUserProfile (auth change) error:', e)
+          })
           setLoading(false)
         } else {
           setUser(null)

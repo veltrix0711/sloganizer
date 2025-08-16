@@ -78,7 +78,15 @@ const SocialPostForm = ({ onGenerate, generating, selectedProfile }) => {
     topic: '',
     includeHashtags: true,
     toneOverride: '',
-    count: 3
+    count: 3,
+    // v2 controls
+    creativity: 0.8,
+    length: 'medium',
+    cta: '',
+    hashtagDensity: 'normal',
+    emoji: 'tasteful',
+    structure: { hook: 1, body: 1, cta: 1 },
+    useBrandProfile: false
   });
   const [errors, setErrors] = useState({});
 
@@ -141,7 +149,8 @@ const SocialPostForm = ({ onGenerate, generating, selectedProfile }) => {
     onGenerate({
       ...formData,
       topic: formData.topic.trim(),
-      toneOverride: formData.toneOverride.trim() || undefined
+      toneOverride: formData.toneOverride.trim() || undefined,
+      brandProfileId: formData.useBrandProfile ? selectedProfile?.id : undefined
     });
   };
 
@@ -328,6 +337,78 @@ const SocialPostForm = ({ onGenerate, generating, selectedProfile }) => {
             : 'Posts will be generated without hashtags'
           }
         </p>
+      </div>
+
+      {/* V2 Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Creativity</label>
+          <input type="range" min={0.2} max={1.2} step={0.1} value={formData.creativity} onChange={(e)=>handleInputChange('creativity', parseFloat(e.target.value))} className="w-full" disabled={generating} />
+          <p className="text-xs text-gray-500 mt-1">{formData.creativity.toFixed(1)}</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Length</label>
+          <select value={formData.length} onChange={(e)=>handleInputChange('length', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={generating}>
+            <option value="short">Short</option>
+            <option value="medium">Medium</option>
+            <option value="long">Long</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">CTA Preset</label>
+          <select value={formData.cta} onChange={(e)=>handleInputChange('cta', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={generating}>
+            <option value="">None</option>
+            <option value="Shop now">Shop now</option>
+            <option value="Learn more">Learn more</option>
+            <option value="Book a demo">Book a demo</option>
+            <option value="Sign up">Sign up</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Hashtag Density</label>
+          <select value={formData.hashtagDensity} onChange={(e)=>handleInputChange('hashtagDensity', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={generating}>
+            <option value="none">None</option>
+            <option value="low">Low (1–3)</option>
+            <option value="normal">Normal (4–7)</option>
+            <option value="high">High (8–12)</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Emoji Usage</label>
+          <select value={formData.emoji} onChange={(e)=>handleInputChange('emoji', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={generating}>
+            <option value="none">None</option>
+            <option value="tasteful">Tasteful</option>
+            <option value="expressive">Expressive</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Structure Emphasis</label>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs w-16 text-gray-600">Hook</span>
+              <input type="range" min={0} max={2} step={1} value={formData.structure.hook} onChange={(e)=>handleInputChange('structure', { ...formData.structure, hook: parseInt(e.target.value,10) })} className="flex-1" disabled={generating} />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs w-16 text-gray-600">Body</span>
+              <input type="range" min={0} max={2} step={1} value={formData.structure.body} onChange={(e)=>handleInputChange('structure', { ...formData.structure, body: parseInt(e.target.value,10) })} className="flex-1" disabled={generating} />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs w-16 text-gray-600">CTA</span>
+              <input type="range" min={0} max={2} step={1} value={formData.structure.cta} onChange={(e)=>handleInputChange('structure', { ...formData.structure, cta: parseInt(e.target.value,10) })} className="flex-1" disabled={generating} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Use Brand Profile */}
+      <div>
+        <label className="flex items-center">
+          <input type="checkbox" checked={formData.useBrandProfile} onChange={(e)=>handleInputChange('useBrandProfile', e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" disabled={generating || !selectedProfile} />
+          <span className="ml-2 text-sm text-gray-700">Use selected brand profile context</span>
+        </label>
+        {!selectedProfile && (
+          <p className="text-xs text-gray-500 mt-1">Select a brand profile to enable this option.</p>
+        )}
       </div>
 
       {/* Post Count */}

@@ -205,11 +205,12 @@ const TemplateMarketplacePage = () => {
   const canUseTemplate = (template) => {
     if (!isPremiumTemplate(template)) return true
     if (!profile) return false
-    
-    const userTier = profile.subscription_plan
-    if (userTier === 'agency' || userTier === 'premium') return true
-    if (userTier === 'pro' && template.tier === 'pro') return true
-    
+
+    const rawTier = profile.subscription_plan || ''
+    const tier = String(rawTier).toLowerCase()
+    if (tier.includes('agency') || tier.includes('premium')) return true
+    if (tier.startsWith('pro') && template.tier === 'pro') return true
+
     return false
   }
 

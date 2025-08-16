@@ -27,6 +27,18 @@ const NewPricingPage = () => {
   const [planLoading, setPlanLoading] = useState(true)
   const hasFetchedRef = useRef(false)
 
+  // Handle Stripe return: canceled=true
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('canceled') === 'true') {
+      toast.error('Checkout canceled')
+      params.delete('canceled')
+      const qs = params.toString()
+      const newUrl = window.location.pathname + (qs ? `?${qs}` : '')
+      window.history.replaceState({}, '', newUrl)
+    }
+  }, [])
+
   useEffect(() => {
     if (authLoading) return
     if (!user?.id) {
@@ -110,23 +122,16 @@ const NewPricingPage = () => {
     setLoading(planCode)
 
     try {
-      // Map planCode to priceId based on env-backed price IDs
-      const priceMap = {
-        PRO_50: import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID || undefined,
-        PRO_200: import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID || undefined,
-        PRO_500: import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID || undefined,
-        AGENCY: import.meta.env.VITE_STRIPE_AGENCY_MONTHLY_PRICE_ID || undefined
-      }
-      const priceId = priceMap[planCode]
+      // Let backend derive the correct Stripe priceId for the selected plan
       const response = await api.createBillingCheckout({
         planId: planCode,
-        priceId,
         successUrl: window.location.origin + '/billing/success',
         cancelUrl: window.location.origin + '/pricing'
       })
 
-      if (response.success && response.url) {
-        window.location.href = response.url
+      const redirectUrl = response?.url || response?.sessionUrl
+      if (response.success && redirectUrl) {
+        window.location.href = redirectUrl
       } else {
         throw new Error('Failed to create checkout session')
       }

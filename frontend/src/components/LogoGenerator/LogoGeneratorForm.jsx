@@ -4,26 +4,41 @@ import { Palette, Loader2, Lightbulb, Type, Sparkles } from 'lucide-react';
 const STYLE_OPTIONS = [
   { value: 'modern', label: 'Modern', description: 'Clean, contemporary design' },
   { value: 'minimalist', label: 'Minimalist', description: 'Simple, clean aesthetic' },
-  { value: 'vintage', label: 'Vintage', description: 'Classic, retro styling' },
-  { value: 'bold', label: 'Bold', description: 'Strong, impactful design' },
+  { value: 'geometric', label: 'Geometric', description: 'Mathematical, structured forms' },
+  { value: 'emblem', label: 'Emblem', description: 'Badge-style, traditional format' },
+  { value: 'wordmark', label: 'Wordmark', description: 'Typography-focused design' },
+  { value: 'monogram', label: 'Monogram', description: 'Initials-based logo' },
   { value: 'elegant', label: 'Elegant', description: 'Sophisticated, refined' },
-  { value: 'playful', label: 'Playful', description: 'Fun, creative approach' },
-  { value: 'corporate', label: 'Corporate', description: 'Professional, business-focused' },
-  { value: 'creative', label: 'Creative', description: 'Artistic, unique design' }
+  { value: 'playful', label: 'Playful', description: 'Fun, creative approach' }
 ];
 
-const CONCEPT_EXAMPLES = [
-  'Tech startup with geometric shapes',
-  'Coffee shop with warm colors',
-  'Fitness brand with dynamic elements',
-  'Luxury brand with gold accents',
-  'Nature-inspired organic shapes',
-  'Digital agency with modern typography'
+const INDUSTRY_OPTIONS = [
+  { value: 'tech_startup', label: 'Tech Startup', description: 'Technology and innovation' },
+  { value: 'consulting', label: 'Consulting', description: 'Professional services' },
+  { value: 'creative_agency', label: 'Creative Agency', description: 'Design and marketing' },
+  { value: 'finance', label: 'Finance', description: 'Financial services' },
+  { value: 'health_wellness', label: 'Health & Wellness', description: 'Healthcare and fitness' },
+  { value: 'food_beverage', label: 'Food & Beverage', description: 'Restaurants and cafes' },
+  { value: 'retail', label: 'Retail', description: 'Shopping and ecommerce' },
+  { value: 'real_estate', label: 'Real Estate', description: 'Property and construction' },
+  { value: 'education', label: 'Education', description: 'Learning and training' },
+  { value: 'custom', label: 'Custom', description: 'Describe your own business' }
+];
+
+const MOOD_OPTIONS = [
+  { value: 'professional', label: 'Professional', description: 'Serious, trustworthy' },
+  { value: 'innovative', label: 'Innovative', description: 'Cutting-edge, forward-thinking' },
+  { value: 'friendly', label: 'Friendly', description: 'Approachable, welcoming' },
+  { value: 'luxury', label: 'Luxury', description: 'Premium, high-end' },
+  { value: 'energetic', label: 'Energetic', description: 'Dynamic, active' },
+  { value: 'calm', label: 'Calm', description: 'Peaceful, serene' }
 ];
 
 const LogoGeneratorForm = ({ onGenerate, generating, selectedProfile }) => {
   const [formData, setFormData] = useState({
+    industry: 'tech_startup',
     concept: '',
+    mood: 'professional',
     style: 'modern',
     colors: selectedProfile?.primary_color ? [selectedProfile.primary_color] : ['#3B82F6'],
     includeText: false,
@@ -76,14 +91,25 @@ const LogoGeneratorForm = ({ onGenerate, generating, selectedProfile }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.concept.trim()) {
-      newErrors.concept = 'Logo concept is required';
-    } else if (formData.concept.trim().length < 3) {
-      newErrors.concept = 'Concept must be at least 3 characters';
+    if (formData.industry === 'custom' && !formData.concept.trim()) {
+      newErrors.concept = 'Please describe your business';
+    } else if (formData.industry === 'custom' && formData.concept.trim().length < 3) {
+      newErrors.concept = 'Description must be at least 3 characters';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const buildConceptFromSelections = () => {
+    if (formData.industry === 'custom') {
+      return formData.concept.trim();
+    }
+    
+    const industryLabel = INDUSTRY_OPTIONS.find(opt => opt.value === formData.industry)?.label || 'business';
+    const moodLabel = MOOD_OPTIONS.find(opt => opt.value === formData.mood)?.label || '';
+    
+    return `${moodLabel} ${industryLabel}`.trim();
   };
 
   const handleSubmit = (e) => {
@@ -95,7 +121,7 @@ const LogoGeneratorForm = ({ onGenerate, generating, selectedProfile }) => {
 
     onGenerate({
       ...formData,
-      concept: formData.concept.trim()
+      concept: buildConceptFromSelections()
     });
   };
 
@@ -123,41 +149,75 @@ const LogoGeneratorForm = ({ onGenerate, generating, selectedProfile }) => {
         </div>
       )}
 
-      {/* Logo Concept */}
+      {/* Industry Selection */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Logo Concept *
+          Business Industry *
         </label>
-        <textarea
-          value={formData.concept}
-          onChange={(e) => handleInputChange('concept', e.target.value)}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.concept ? 'border-red-300' : 'border-gray-300'
-          }`}
-          placeholder="Describe your logo concept (e.g., 'Modern tech logo with abstract geometric shapes')"
-          rows={3}
-          disabled={generating}
-        />
-        {errors.concept && (
-          <p className="mt-1 text-sm text-red-600">{errors.concept}</p>
-        )}
-        
-        {/* Example concepts */}
-        <div className="mt-2">
-          <p className="text-xs text-gray-500 mb-1">Example concepts:</p>
-          <div className="space-y-1">
-            {CONCEPT_EXAMPLES.slice(0, 3).map(concept => (
-              <button
-                key={concept}
-                type="button"
-                onClick={() => handleInputChange('concept', concept)}
-                className="block text-xs text-left px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors w-full"
-                disabled={generating}
-              >
-                {concept}
-              </button>
-            ))}
-          </div>
+        <div className="grid grid-cols-2 gap-2">
+          {INDUSTRY_OPTIONS.map(industry => (
+            <button
+              key={industry.value}
+              type="button"
+              onClick={() => handleInputChange('industry', industry.value)}
+              className={`p-3 text-left border rounded-lg transition-all ${
+                formData.industry === industry.value 
+                  ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              disabled={generating}
+            >
+              <div className="font-medium text-sm">{industry.label}</div>
+              <div className="text-xs text-gray-500">{industry.description}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom Business Description (if custom selected) */}
+      {formData.industry === 'custom' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Describe Your Business *
+          </label>
+          <textarea
+            value={formData.concept}
+            onChange={(e) => handleInputChange('concept', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.concept ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="Describe what your business does (e.g., 'AI-powered customer service platform')"
+            rows={3}
+            disabled={generating}
+          />
+          {errors.concept && (
+            <p className="mt-1 text-sm text-red-600">{errors.concept}</p>
+          )}
+        </div>
+      )}
+
+      {/* Mood Selection */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Brand Mood
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {MOOD_OPTIONS.map(mood => (
+            <button
+              key={mood.value}
+              type="button"
+              onClick={() => handleInputChange('mood', mood.value)}
+              className={`p-2 text-center border rounded-lg transition-all ${
+                formData.mood === mood.value 
+                  ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              disabled={generating}
+            >
+              <div className="font-medium text-sm">{mood.label}</div>
+              <div className="text-xs text-gray-500">{mood.description}</div>
+            </button>
+          ))}
         </div>
       </div>
 
