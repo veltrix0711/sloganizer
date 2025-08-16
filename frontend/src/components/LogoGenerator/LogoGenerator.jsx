@@ -100,11 +100,14 @@ const LogoGenerator = () => {
         body: JSON.stringify(payload),
       });
       
+      console.log('📥 Logo generation response:', data);
+      
       if (data.success) {
         toast.success('Logo generation started! This may take 1-2 minutes.');
         // Add new job to the list
         loadJobs();
       } else {
+        console.error('❌ Logo generation failed:', data);
         throw new Error(data.error || 'Generation failed');
       }
 

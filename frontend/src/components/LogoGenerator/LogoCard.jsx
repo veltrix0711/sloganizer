@@ -67,13 +67,42 @@ const LogoCard = ({ logo, onSetPrimary, onDelete, onDownload }) => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             )}
-            <img
-              src={file_url}
-              alt={file_name}
-              className="max-w-full max-h-full object-contain"
-              onLoad={() => setImageLoading(false)}
-              onError={() => setImageLoading(false)}
-            />
+            {file_url ? (
+              file_url.startsWith('data:image/') ? (
+                <img
+                  src={file_url}
+                  alt={file_name}
+                  className="max-w-full max-h-full object-contain"
+                  onLoad={() => {
+                    console.log('✅ Data URL image loaded:', file_name);
+                    setImageLoading(false);
+                  }}
+                  onError={(e) => {
+                    console.error('❌ Data URL image error:', e.target.error);
+                    setImageLoading(false);
+                  }}
+                />
+              ) : (
+                <img
+                  src={file_url}
+                  alt={file_name}
+                  className="max-w-full max-h-full object-contain"
+                  referrerPolicy="no-referrer"
+                  onLoad={() => {
+                    console.log('✅ URL image loaded:', file_name);
+                    setImageLoading(false);
+                  }}
+                  onError={(e) => {
+                    console.error('❌ URL image error:', e.target.error);
+                    setImageLoading(false);
+                  }}
+                />
+              )
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                No image URL provided
+              </div>
+            )}
             
             {/* Primary Badge */}
             {is_primary && (
