@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Palette, Loader2, Lightbulb, Type, Sparkles } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const STYLE_OPTIONS = [
   { value: 'modern', label: 'Modern', description: 'Clean, contemporary design' },
@@ -42,9 +43,31 @@ const LogoGeneratorForm = ({ onGenerate, generating, selectedProfile }) => {
     style: 'modern',
     colors: selectedProfile?.primary_color ? [selectedProfile.primary_color] : ['#3B82F6'],
     includeText: false,
-    iterations: 4
+  iterations: 4 // backend currently caps at 4
   });
   const [errors, setErrors] = useState({});
+
+  // Check for prefilled data from other generators
+  useEffect(() => {
+    try {
+      const prefill = localStorage.getItem('lz_logo_prefill');
+      if (prefill) {
+        const { brandName, fromGenerator } = JSON.parse(prefill);
+        if (brandName) {
+          setFormData(prev => ({
+            ...prev,
+            concept: brandName,
+            includeText: true
+          }));
+          toast.success(`Prefilled brand name: "${brandName}"`);
+          // Clear the prefill data
+          localStorage.removeItem('lz_logo_prefill');
+        }
+      }
+    } catch (error) {
+      console.error('Error reading prefill data:', error);
+    }
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -334,12 +357,10 @@ const LogoGeneratorForm = ({ onGenerate, generating, selectedProfile }) => {
           disabled={generating}
         >
           <option value={2}>2 variations</option>
-          <option value={4}>4 variations</option>
-          <option value={6}>6 variations</option>
-          <option value={8}>8 variations</option>
+          <option value={4}>4 variations (max)</option>
         </select>
         <p className="text-xs text-gray-500 mt-1">
-          More variations take longer but provide more options
+          Backend limit currently 4. Increase after provider stability.
         </p>
       </div>
 

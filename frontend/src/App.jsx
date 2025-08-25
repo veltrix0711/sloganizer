@@ -22,6 +22,7 @@ import BrandSuitePage from './pages/BrandSuitePage'
 import SocialMediaPage from './pages/SocialMediaPage'
 import TemplateMarketplacePage from './pages/TemplateMarketplacePage'
 import AIStrategyToolsPage from './pages/AIStrategyToolsPage'
+import BrandWizardPage from './pages/BrandWizardPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Components
@@ -50,6 +51,7 @@ function App() {
               <Route path="/templates" element={<TemplateMarketplacePage />} />
               <Route path="/pricing" element={<NewPricingPage />} />
               <Route path="/contact-sales" element={<ContactSalesPage />} />
+              <Route path="/brand-wizard" element={<BrandWizardPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />

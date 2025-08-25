@@ -20,6 +20,7 @@ import LogoGeneratorForm from './LogoGeneratorForm';
 import LogoCard from './LogoCard';
 import JobStatusCard from './JobStatusCard';
 import BrandProfileSelector from '../BrandProfile/BrandProfileSelector';
+import CrossGeneratorSuggestions from '../Widgets/CrossGeneratorSuggestions';
 
 const LogoGenerator = () => {
   const { user } = useAuth();
@@ -268,6 +269,16 @@ const LogoGenerator = () => {
                 </div>
               </div>
             )}
+
+            {/* Cross-Generator Suggestions */}
+            <CrossGeneratorSuggestions
+              currentGenerator="logos"
+              selectedProfile={selectedProfile}
+              latestAssets={{
+                hasLogo: logos.length > 0,
+                hasSocialContent: false // TODO: Check if user has social posts
+              }}
+            />
           </div>
         </div>
 

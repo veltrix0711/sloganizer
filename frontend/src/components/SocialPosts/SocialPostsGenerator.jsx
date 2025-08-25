@@ -19,6 +19,7 @@ import {
 import SocialPostForm from './SocialPostForm';
 import PostCard from './PostCard';
 import BrandProfileSelector from '../BrandProfile/BrandProfileSelector';
+import CrossGeneratorSuggestions from '../Widgets/CrossGeneratorSuggestions';
 
 const PLATFORMS = {
   instagram: { name: 'Instagram', color: 'bg-pink-500', icon: '📷' },
@@ -45,6 +46,23 @@ const SocialPostsGenerator = () => {
       loadPosts();
     }
   }, [user, selectedProfile, filters]);
+
+  // Prefill from Content Ideas
+  useEffect(() => {
+    try {
+      const prefill = localStorage.getItem('lz_social_prefill');
+      if (prefill) {
+        const { topic } = JSON.parse(prefill);
+        if (topic) {
+          toast.success('Prefilled topic from Content Ideas');
+          // Bubble to form via custom event
+          const evt = new CustomEvent('lz:set-social-topic', { detail: { topic } });
+          window.dispatchEvent(evt);
+        }
+        localStorage.removeItem('lz_social_prefill');
+      }
+    } catch {}
+  }, []);
 
   const loadPosts = async () => {
     try {
@@ -293,6 +311,18 @@ const SocialPostsGenerator = () => {
               onGenerate={handleGenerate}
               generating={generating}
               selectedProfile={selectedProfile}
+            />
+          </div>
+
+          {/* Cross-Generator Suggestions */}
+          <div className="mt-6">
+            <CrossGeneratorSuggestions
+              currentGenerator="social"
+              selectedProfile={selectedProfile}
+              latestAssets={{
+                hasLogo: false, // TODO: Check if user has logos
+                hasSocialContent: posts.length > 0
+              }}
             />
           </div>
         </div>

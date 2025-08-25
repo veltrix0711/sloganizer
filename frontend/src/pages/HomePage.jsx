@@ -119,14 +119,21 @@ const HomePage = () => {
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <Link
-                to="/brand-suite"
+                to="/brand-wizard"
                 className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg font-semibold text-white shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 hover:scale-105"
               >
                 <span className="relative z-10 flex items-center justify-center">
-                  Start Building Your Brand
+                  Launch Brand Wizard
                   <Rocket className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-purple-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Link>
+              
+              <Link
+                to="/brand-suite"
+                className="px-8 py-4 bg-slate-800/50 border border-slate-600 rounded-lg font-semibold text-white hover:bg-slate-700/50 hover:border-slate-500 transition-all duration-300 backdrop-blur-sm"
+              >
+                Advanced Tools
               </Link>
               
               <Link

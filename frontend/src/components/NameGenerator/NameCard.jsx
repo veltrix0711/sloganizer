@@ -9,11 +9,12 @@ import {
   Clock,
   Trash2,
   Copy,
-  CheckCircle
+  CheckCircle,
+  Star
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const NameCard = ({ name, onToggleFavorite, onClaim, onDelete }) => {
+const NameCard = ({ name, onToggleFavorite, onClaim, onDelete, onSelect }) => {
   const [copied, setCopied] = useState(false);
 
   const {
@@ -126,6 +127,17 @@ const NameCard = ({ name, onToggleFavorite, onClaim, onDelete }) => {
           </div>
 
           <div className="flex items-center gap-2 ml-4">
+            {onSelect && (
+              <button
+                onClick={() => onSelect(name)}
+                className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors flex items-center gap-1"
+                title="Select this name for your brand"
+              >
+                <Star className="w-3 h-3" />
+                Select
+              </button>
+            )}
+
             <button
               onClick={handleCopyName}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"

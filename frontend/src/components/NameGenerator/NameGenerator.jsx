@@ -19,6 +19,7 @@ import {
 import NameGeneratorForm from './NameGeneratorForm';
 import NameCard from './NameCard';
 import BrandProfileSelector from '../BrandProfile/BrandProfileSelector';
+import CrossGeneratorSuggestions from '../Widgets/CrossGeneratorSuggestions';
 
 const NameGenerator = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ const NameGenerator = () => {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [filter, setFilter] = useState('all'); // all, favorites, available
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedName, setSelectedName] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -159,6 +161,11 @@ const NameGenerator = () => {
     }
   };
 
+  const handleSelectName = (name) => {
+    setSelectedName(name.name);
+    toast.success(`Selected "${name.name}" for your brand!`);
+  };
+
   const handleCheckDomains = async (nameIds) => {
     try {
       setLoading(true);
@@ -269,6 +276,19 @@ const NameGenerator = () => {
               selectedProfile={selectedProfile}
             />
           </div>
+
+          {/* Cross-Generator Suggestions */}
+          <div className="mt-6">
+            <CrossGeneratorSuggestions
+              currentGenerator="names"
+              selectedProfile={selectedProfile}
+              latestAssets={{
+                selectedName: selectedName,
+                hasLogo: false, // TODO: Check if user has logos
+                hasSocialContent: false // TODO: Check if user has social posts
+              }}
+            />
+          </div>
         </div>
 
         {/* Results */}
@@ -353,6 +373,7 @@ const NameGenerator = () => {
                   onToggleFavorite={handleToggleFavorite}
                   onClaim={handleClaimName}
                   onDelete={handleDeleteName}
+                  onSelect={handleSelectName}
                 />
               ))}
               
